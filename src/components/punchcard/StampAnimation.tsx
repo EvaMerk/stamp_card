@@ -20,6 +20,8 @@ export const STAMP_IMPACT_MS = Math.round(
 );
 
 export interface StampAnimationProps {
+  /** Akzentfarbe des Ziels (Hex) — färbt Gummi-Pad und Tintenring. */
+  color: string;
   /** Feuert im Moment des Aufpralls (→ Feld darunter füllen). */
   onImpact?: () => void;
   /** Feuert, wenn der Stempel wieder abgehoben ist (→ Overlay abbauen). */
@@ -33,16 +35,19 @@ export interface StampAnimationProps {
  * Squash-Bounce und Rotations-Wackler auf, ein Tintenring pufft auf, dann
  * hebt der Stempel wieder ab und gibt das (permanent gefüllte) Feld frei.
  *
- * „Ticket & Tinte“: Gummi-Pad und Tintenring nutzen die Stempel-Tokens
- * (var(--stamp)) — Light: Tintenschwarz, Dark: glühendes Amber — statt der
- * Zielfarbe, passend zum Abdruck im Feld (.stamp-ink).
+ * „Ticket & Tinte“: Gummi-Pad und Tintenring nutzen die Zielfarbe (`color`),
+ * passend zum farbigen Abdruck im Feld (.stamp-ink).
  *
  * Muss in einem `position: relative`-Container mit Feld-Größe gemountet
  * werden. Lebensdauer = eine Animation; der Aufrufer unmountet die Komponente
  * in `onComplete`. Reduced Motion behandelt der Aufrufer (Overlay gar nicht
  * erst mounten).
  */
-export function StampAnimation({ onImpact, onComplete }: StampAnimationProps) {
+export function StampAnimation({
+  color,
+  onImpact,
+  onComplete,
+}: StampAnimationProps) {
   // Callbacks in Refs, damit der Impact-Timer nicht bei jedem Re-Render
   // (neue Inline-Callbacks) zurückgesetzt wird.
   const onImpactRef = useRef(onImpact);
@@ -62,7 +67,7 @@ export function StampAnimation({ onImpact, onComplete }: StampAnimationProps) {
       {/* Tintenring: pufft im Moment des Aufpralls kurz auf. */}
       <motion.span
         className="absolute inset-0 block rounded-full"
-        style={{ border: "3px solid var(--stamp)" }}
+        style={{ border: `3px solid ${color}` }}
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: [0, 0.7, 0], scale: [0.6, 1.45, 1.6] }}
         transition={{
@@ -112,7 +117,7 @@ export function StampAnimation({ onImpact, onComplete }: StampAnimationProps) {
         }}
         onAnimationComplete={() => onComplete?.()}
       >
-        <StampSvg />
+        <StampSvg color={color} />
       </motion.span>
     </span>
   );
@@ -120,11 +125,10 @@ export function StampAnimation({ onImpact, onComplete }: StampAnimationProps) {
 
 /**
  * Klassischer Gummistempel als Inline-SVG: Holzknauf, geschwungener Hals,
- * Holzsockel und Gummi-Pad in Stempel-Tintenfarbe (var(--stamp)). Das Pad
- * sitzt am unteren Rand der viewBox, sodass es beim Aufsetzen genau auf dem
- * Feld landet.
+ * Holzsockel und Gummi-Pad in der Zielfarbe (`color`). Das Pad sitzt am
+ * unteren Rand der viewBox, sodass es beim Aufsetzen genau auf dem Feld landet.
  */
-function StampSvg() {
+function StampSvg({ color }: { color: string }) {
   // Eindeutige Gradient-IDs — es können mehrere Stempel gleichzeitig fliegen.
   const uid = useId();
   const woodId = `stamp-wood-${uid}`;
@@ -172,9 +176,9 @@ function StampSvg() {
         opacity="0.35"
       />
 
-      {/* Gummi-Pad in Stempel-Tintenfarbe — Unterkante = Unterkante der
-          viewBox, damit das Pad beim Aufsetzen bündig auf dem Feld landet. */}
-      <rect x="15" y="86" width="70" height="34" rx="10" fill="var(--stamp)" />
+      {/* Gummi-Pad in der Zielfarbe — Unterkante = Unterkante der viewBox,
+          damit das Pad beim Aufsetzen bündig auf dem Feld landet. */}
+      <rect x="15" y="86" width="70" height="34" rx="10" fill={color} />
       {/* Schattierung an der Unterkante des Pads */}
       <rect
         x="15"

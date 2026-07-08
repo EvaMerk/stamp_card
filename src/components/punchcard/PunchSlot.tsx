@@ -125,6 +125,7 @@ export function PunchSlot({
           <motion.span
             key="ink"
             className="stamp-ink absolute inset-0 flex items-center justify-center rounded-full"
+            style={{ ["--stamp-color" as string]: color }}
             role="img"
             aria-label={`Feld ${slotNumber}: gestempelt`}
             initial={{ opacity: 1, scale: 1, rotate: inkRotation }}
@@ -144,6 +145,7 @@ export function PunchSlot({
       {/* Fliegender Stempel — pro Feld genau einer gleichzeitig. */}
       {animating && (
         <StampAnimation
+          color={color}
           onImpact={() => setImpacted(true)}
           onComplete={() => {
             setAnimating(false);
