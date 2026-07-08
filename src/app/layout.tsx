@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -9,6 +9,13 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+// Display-Schrift „Ticket & Tinte“: charaktervolle Headlines, Ziel-Titel,
+// große Zahlen (variable Gewichte; CSS-Var --font-bricolage → --font-display).
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
@@ -25,8 +32,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Browser-Chrome-/Statusleisten-Farbe (Amber-Akzent, wie theme_color im Manifest)
-  themeColor: "#d97706",
+  // Browser-Chrome-/Statusleisten-Farbe folgt dem System-Theme:
+  // Light „Creme & Tinte“ / Dark „Glow“ — Werte = --paper aus globals.css.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf3e7" },
+    { media: "(prefers-color-scheme: dark)", color: "#141210" },
+  ],
 };
 
 export default function RootLayout({
@@ -37,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

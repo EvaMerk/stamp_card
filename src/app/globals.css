@@ -1,20 +1,142 @@
 @import "tailwindcss";
 
+/*
+ * Design-Tokens „Ticket & Tinte“.
+ *
+ * Light  = „Creme & Tinte“: warmes Papier, tintenschwarzer Text, orange Auren.
+ * Dark   = „Glow“ (folgt der System-Einstellung): warmes Fast-Schwarz,
+ *          Stempel als glühende Amber-Lichter, Haarlinien-Borders.
+ *
+ * JEDE Farbe der App läuft über diese Tokens (bzw. über goal.color aus der
+ * DB). Die Rohwerte leben hier in :root; der @theme-inline-Block mappt sie
+ * auf Tailwind-Utilities (bg-paper, text-ink, border-hairline, shadow-card …).
+ * Plotly kann keine CSS-Variablen lesen — die Chart-Pendants liegen in
+ * src/lib/analytics/chart-theme.ts und MÜSSEN synchron bleiben.
+ */
+
 :root {
-  /* Warmes, freundliches Punchcard-Thema */
-  --background: #fdf8f0; /* Creme */
-  --foreground: #44403b; /* warmes Dunkelgrau (stone-700) */
+  /* Flächen */
+  --paper: #faf3e7; /* Seiten-Hintergrund (warmes Papier) */
+  --surface: #fffcf4; /* Karten/Panels */
+  --ticket: #fbf4e4; /* Ticket-Korpus (Stempelkarte) */
+  --sunken: #f1e7d2; /* eingelassene Flächen: Segmented-Track, gesperrte Felder */
+
+  /* Tinte (Text) */
+  --ink: #191512;
+  --ink-soft: #6b6152;
+  --ink-faint: #a3977f;
+
+  /* Akzent (warmes Orange) */
+  --accent: #e07316; /* Füllungen (Buttons, aktive Punkte) */
+  --accent-strong: #b45708; /* Text-Links, Betonungen auf hellem Grund */
+  --accent-soft: rgba(224, 115, 22, 0.12); /* getönte Hintergründe */
+  --accent-contrast: #fffcf4; /* Text auf Akzent-Füllungen */
+
+  /* Dekor */
+  --aura: rgba(240, 138, 42, 0.38); /* Orange-Aura (radial, ausblendend) */
+  --hairline: rgba(25, 21, 18, 0.1);
+  --elev-card: 0 16px 36px -20px rgba(93, 60, 18, 0.35);
+
+  /* Status */
+  --danger: #c73e2c;
+  --danger-soft: rgba(199, 62, 44, 0.1);
+  --success: #4f9152;
+
+  /* Stempel-Tinte (gefüllte Felder + Stempel-Pad) */
+  --stamp: #191512;
+  --stamp-check: #faf3e7;
+  --stamp-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #141210;
+    --surface: #1d1915;
+    --ticket: #211c16;
+    --sunken: #2b241c;
+
+    --ink: #f2e8d8;
+    --ink-soft: #b5a892;
+    --ink-faint: #776c5b;
+
+    --accent: #ef9432;
+    --accent-strong: #f6b163;
+    --accent-soft: rgba(239, 148, 50, 0.14);
+    --accent-contrast: #221302;
+
+    --aura: rgba(242, 140, 50, 0.2);
+    --hairline: rgba(255, 255, 255, 0.07);
+    --elev-card: 0 18px 40px -20px rgba(0, 0, 0, 0.65);
+
+    --danger: #f07f68;
+    --danger-soft: rgba(240, 127, 104, 0.12);
+    --success: #83bd85;
+
+    /* „Glow“: gefüllte Stempel sind warme Amber-Lichter */
+    --stamp: #f4a63a;
+    --stamp-check: #241502;
+    --stamp-shadow:
+      0 0 10px rgba(244, 166, 58, 0.55),
+      0 0 26px rgba(244, 166, 58, 0.28);
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Farben → Tailwind-Utilities */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ticket: var(--ticket);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-hairline: var(--hairline);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-stamp: var(--stamp);
+  --color-stamp-check: var(--stamp-check);
+
+  /* Legacy-Aliase */
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+
+  /* Typografie: Geist für Fließtext, Bricolage Grotesque für Display */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage);
+
+  /* Schatten */
+  --shadow-card: var(--elev-card);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Orange-Aura: dekorativer Glow in Kartenecken / hinter Headlines.
+   Immer mit position/size-Utilities kombinieren (absolute, h-*, w-*). */
+.aura {
+  border-radius: calc(infinity * 1px);
+  background: radial-gradient(closest-side, var(--aura), transparent 72%);
+  pointer-events: none;
+}
+
+/* Getönte Hintergründe aus den rgba-Tokens */
+.bg-accent-soft {
+  background-color: var(--accent-soft);
+}
+.bg-danger-soft {
+  background-color: var(--danger-soft);
+}
+
+/* Stempel-Tinte: gefülltes Punchcard-Feld (Light: Tinte, Dark: Amber-Glow) */
+.stamp-ink {
+  background-color: var(--stamp);
+  color: var(--stamp-check);
+  box-shadow: var(--stamp-shadow);
 }

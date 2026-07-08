@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { SealCheck } from "@phosphor-icons/react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -47,21 +48,27 @@ function DashboardContent() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 py-8">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 py-8">
+      {/* Orange-Aura hinter dem Header (dekorativ) */}
+      <span
+        className="aura absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2"
+        aria-hidden="true"
+      />
+
+      <header className="relative mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span
-            className="flex h-11 w-11 rotate-[-6deg] items-center justify-center rounded-xl border-2 border-dashed border-amber-400 bg-amber-100 text-xl"
+            className="flex h-11 w-11 rotate-[-6deg] items-center justify-center rounded-full bg-stamp text-stamp-check shadow-card"
             aria-hidden="true"
           >
-            🏅
+            <SealCheck size={24} weight="fill" />
           </span>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-stone-800">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
               Meine Ziele
             </h1>
             {user?.email && (
-              <p className="text-xs text-stone-500">{user.email}</p>
+              <p className="text-xs text-ink-faint">{user.email}</p>
             )}
           </div>
         </div>
@@ -69,7 +76,7 @@ function DashboardContent() {
       </header>
 
       <div
-        className="mx-auto mb-8 grid w-full max-w-sm grid-cols-2 gap-1 rounded-2xl bg-stone-100 p-1"
+        className="relative mx-auto mb-8 grid w-full max-w-sm grid-cols-2 gap-1 rounded-full bg-sunken p-1"
         role="tablist"
         aria-label="Dashboard-Ansicht"
       >
@@ -85,10 +92,10 @@ function DashboardContent() {
               aria-controls={`tabpanel-${key}`}
               onClick={() => switchTab(key)}
               className={cn(
-                "rounded-xl px-3 py-2 text-sm font-medium transition",
+                "rounded-full px-3 py-2 text-sm font-medium transition",
                 selected
-                  ? "bg-white text-amber-700 shadow-sm"
-                  : "text-stone-500 hover:text-stone-700",
+                  ? "bg-surface text-accent-strong shadow-sm"
+                  : "text-ink-soft hover:text-ink",
               )}
             >
               {label}
@@ -97,7 +104,7 @@ function DashboardContent() {
         })}
       </div>
 
-      <main className="flex flex-1 flex-col">
+      <main className="relative flex flex-1 flex-col">
         <div
           id="tabpanel-ziele"
           role="tabpanel"
@@ -110,7 +117,7 @@ function DashboardContent() {
             </div>
           ) : error ? (
             <p
-              className="mx-auto max-w-md rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="bg-danger-soft mx-auto max-w-md rounded-2xl px-4 py-3 text-sm text-danger"
               role="alert"
             >
               {error}

@@ -1,24 +1,35 @@
+import { SealCheck } from "@phosphor-icons/react/dist/ssr";
+
 export default function AuthLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-10">
-      <div className="mb-8 flex flex-col items-center gap-2">
+    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 py-10">
+      {/* Orange-Aura hinter dem Logo/der Karte (rein dekorativ) */}
+      <span
+        className="aura absolute left-1/2 top-16 h-72 w-72 -translate-x-1/2"
+        aria-hidden="true"
+      />
+
+      <div className="relative mb-8 flex flex-col items-center gap-3">
         <span
-          className="flex h-16 w-16 rotate-[-6deg] items-center justify-center rounded-2xl border-2 border-dashed border-amber-400 bg-amber-100 text-3xl shadow-sm"
+          className="flex h-16 w-16 rotate-[-6deg] items-center justify-center rounded-full bg-stamp text-stamp-check shadow-card"
           aria-hidden="true"
         >
-          🏅
+          <SealCheck size={34} weight="fill" />
         </span>
-        <h1 className="text-2xl font-bold tracking-tight text-stone-800">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
           Stempelkarte
         </h1>
-        <p className="text-sm text-stone-500">
-          Deine Ziele, Stempel für Stempel.
-        </p>
+        <p className="text-sm text-ink-soft">Deine Ziele, Stempel für Stempel.</p>
       </div>
-      <div className="w-full max-w-md rounded-3xl border border-amber-100 bg-white p-8 shadow-xl shadow-amber-900/5">
-        {children}
+
+      <div className="relative w-full max-w-md overflow-hidden rounded-[20px] border border-hairline bg-surface p-8 shadow-card">
+        <span
+          className="aura absolute -right-12 -top-12 h-40 w-40"
+          aria-hidden="true"
+        />
+        <div className="relative">{children}</div>
       </div>
     </div>
   );

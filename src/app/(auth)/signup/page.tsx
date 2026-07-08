@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function SignupPage() {
   return (
     <>
-      <h2 className="mb-6 text-center text-xl font-semibold text-stone-800">
+      <h2 className="mb-6 text-center font-display text-2xl font-semibold tracking-tight text-ink">
         Konto erstellen
       </h2>
       <SignupForm />

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { Confetti, Gift } from "@phosphor-icons/react";
 
 /**
  * Verzögerung des Badge-Einflugs in Sekunden — abgestimmt auf die
@@ -9,20 +10,23 @@ import { motion, useReducedMotion } from "motion/react";
  */
 const ENTRANCE_DELAY_S = 0.55;
 
-/** Konfetti-Punkte: deterministisch (kein Math.random beim Rendern). */
+/**
+ * Konfetti-Punkte: deterministisch (kein Math.random beim Rendern).
+ * Farben = die neue Preset-Palette aus GoalForm („Ticket & Tinte“).
+ */
 const CONFETTI = [
-  { angle: 205, distance: 74, color: "#f59e0b", size: 7 },
-  { angle: 230, distance: 92, color: "#fb7185", size: 5 },
-  { angle: 250, distance: 70, color: "#34d399", size: 6 },
-  { angle: 268, distance: 96, color: "#f59e0b", size: 5 },
-  { angle: 282, distance: 66, color: "#38bdf8", size: 7 },
-  { angle: 296, distance: 90, color: "#fbbf24", size: 5 },
-  { angle: 312, distance: 72, color: "#fb7185", size: 6 },
-  { angle: 330, distance: 88, color: "#34d399", size: 5 },
-  { angle: 190, distance: 60, color: "#38bdf8", size: 5 },
-  { angle: 350, distance: 64, color: "#fbbf24", size: 6 },
-  { angle: 260, distance: 118, color: "#fb7185", size: 4 },
-  { angle: 285, distance: 122, color: "#34d399", size: 4 },
+  { angle: 205, distance: 74, color: "#e8871e", size: 7 },
+  { angle: 230, distance: 92, color: "#e25d4f", size: 5 },
+  { angle: 250, distance: 70, color: "#2fb7b0", size: 6 },
+  { angle: 268, distance: 96, color: "#e8871e", size: 5 },
+  { angle: 282, distance: 66, color: "#5a8dee", size: 7 },
+  { angle: 296, distance: 90, color: "#d96a9b", size: 5 },
+  { angle: 312, distance: 72, color: "#e25d4f", size: 6 },
+  { angle: 330, distance: 88, color: "#2fb7b0", size: 5 },
+  { angle: 190, distance: 60, color: "#5a8dee", size: 5 },
+  { angle: 350, distance: 64, color: "#9f7aea", size: 6 },
+  { angle: 260, distance: 118, color: "#d96a9b", size: 4 },
+  { angle: 285, distance: 122, color: "#9f7aea", size: 4 },
 ];
 
 export interface RewardBadgeProps {
@@ -36,9 +40,9 @@ export interface RewardBadgeProps {
 
 /**
  * Feier-Badge, wenn das letzte Feld einer Karte gestempelt wurde: poppt mit
- * einem Konfetti-Burst aus kleinen Farbpunkten auf (reines CSS/SVG-frei,
- * motion/react) und bleibt danach als ruhige statische Notiz stehen, bis der
- * User sie wegklickt. Ersetzt die frühere Inline-🎉-Notiz in PunchCardGrid.
+ * einem Konfetti-Burst aus kleinen Farbpunkten auf (reines CSS, motion/react)
+ * und bleibt danach als ruhige statische Notiz stehen, bis der User sie
+ * wegklickt.
  *
  * Bei `prefers-reduced-motion` entfallen Konfetti und Pop — das Badge blendet
  * nur dezent ein.
@@ -88,7 +92,7 @@ export function RewardBadge({
       )}
 
       <motion.div
-        className="relative flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 py-2.5 pl-4 pr-2 text-sm text-amber-800 shadow-sm"
+        className="bg-accent-soft relative flex items-start gap-3 rounded-2xl border border-accent/30 py-2.5 pl-4 pr-2 text-sm text-ink"
         role="status"
         initial={
           reduceMotion
@@ -112,22 +116,28 @@ export function RewardBadge({
         }
       >
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">
-            Karte voll! 🎉{" "}
-            <span className="font-normal">
-              Karte {cardNumber} ist komplett — stark!
+          <p className="flex items-center gap-1.5 font-semibold text-accent-strong">
+            <Confetti size={16} weight="fill" aria-hidden="true" />
+            <span>
+              Karte voll!{" "}
+              <span className="font-normal text-ink">
+                Karte {cardNumber} ist komplett — stark!
+              </span>
             </span>
           </p>
           {rewardText && (
-            <p className="mt-0.5">
-              🎁 Deine Belohnung: <strong>{rewardText}</strong>
+            <p className="mt-0.5 flex items-center gap-1.5 text-ink-soft">
+              <Gift size={14} weight="fill" aria-hidden="true" />
+              <span>
+                Deine Belohnung: <strong className="text-ink">{rewardText}</strong>
+              </span>
             </p>
           )}
         </div>
         <button
           type="button"
           onClick={onDismiss}
-          className="shrink-0 cursor-pointer rounded-lg px-2 py-0.5 text-base leading-none text-amber-500 transition hover:bg-amber-100 hover:text-amber-700"
+          className="shrink-0 cursor-pointer rounded-lg px-2 py-0.5 text-base leading-none text-accent-strong transition hover:bg-accent/15"
           aria-label="Hinweis schließen"
         >
           ×

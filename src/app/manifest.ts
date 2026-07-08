@@ -21,8 +21,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "de",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#fdf8f0", // Creme, wie --background in globals.css
-    theme_color: "#d97706", // Amber-600, Akzentfarbe der App
+    background_color: "#faf3e7", // Papier-Creme, wie --paper (Light) in globals.css
+    theme_color: "#e07316", // warmes Orange, wie --accent (Light) in globals.css
     icons: [
       {
         src: "/icons/icon-192.png",

@@ -25,7 +25,7 @@ export function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={submitting}
-      className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 shadow-sm transition hover:border-amber-300 hover:text-amber-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink-soft shadow-sm transition hover:border-accent/50 hover:text-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {submitting ? "Wird abgemeldet …" : "Abmelden"}
     </button>

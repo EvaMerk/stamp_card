@@ -27,7 +27,7 @@ import { getCardRewards } from "@/lib/goals/queries";
 import type { Goal, GoalCardReward, Stamp } from "@/lib/goals/types";
 import { CardOverviewList } from "./CardOverviewList";
 
-const FALLBACK_COLOR = "#f59e0b";
+const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 
 // Plotly (auch als Basic-Bundle ~1 MB) nur client-seitig und lazy laden —
 // nie im Server-Bundle, nie im initialen Routen-Chunk (Export-kompatibel).
@@ -35,7 +35,7 @@ const StampHistoryChart = dynamic(() => import("./StampHistoryChart"), {
   ssr: false,
   loading: () => (
     <div
-      className="flex h-60 items-center justify-center rounded-2xl bg-stone-50 text-xs text-stone-400"
+      className="flex h-60 items-center justify-center rounded-[20px] bg-sunken text-xs text-ink-faint"
       aria-hidden="true"
     >
       Diagramm wird geladen …
@@ -84,17 +84,17 @@ export function GoalAnalyticsView({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm font-medium text-stone-500">
-        <span className="font-semibold text-stone-700">
+      <p className="text-sm font-medium text-ink-soft">
+        <span className="font-display font-bold text-ink">
           {stampCount}/{goal.target_count}
         </span>{" "}
         gestempelt · {remaining} offen · {fullCards}/{cards} Karten voll
       </p>
 
       {stampCount === 0 ? (
-        <p className="rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/70 px-4 py-8 text-center text-sm leading-6 text-stone-500">
+        <p className="rounded-[20px] border-2 border-dashed border-hairline bg-sunken/60 px-4 py-8 text-center text-sm leading-6 text-ink-soft">
           Noch keine Stempel — sobald du den ersten setzt, wächst hier deine
-          Verlaufskurve. 📈
+          Verlaufskurve.
         </p>
       ) : (
         <StampHistoryChart data={chartData} color={color} height={chartHeight} />
@@ -156,7 +156,7 @@ export function GoalAnalytics({
   if (error) {
     return (
       <p
-        className="rounded-xl bg-red-50 px-4 py-2.5 text-xs text-red-700"
+        className="bg-danger-soft rounded-2xl px-4 py-2.5 text-xs text-danger"
         role="alert"
       >
         {error}

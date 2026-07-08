@@ -6,11 +6,11 @@ type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-amber-500 text-white shadow-md shadow-amber-500/25 hover:bg-amber-600",
+    "bg-accent text-accent-contrast shadow-md shadow-accent/25 hover:bg-accent-strong",
   secondary:
-    "border border-stone-200 bg-white text-stone-600 shadow-sm hover:border-amber-300 hover:text-amber-700",
-  danger: "bg-red-500 text-white shadow-md shadow-red-500/25 hover:bg-red-600",
-  ghost: "text-stone-500 hover:bg-stone-100 hover:text-stone-700",
+    "border border-hairline bg-surface text-ink-soft shadow-sm hover:border-accent/50 hover:text-accent-strong",
+  danger: "bg-danger text-accent-contrast shadow-md shadow-danger/25 hover:opacity-90",
+  ghost: "text-ink-soft hover:bg-sunken hover:text-ink",
 };
 
 export interface ButtonProps
@@ -18,7 +18,7 @@ export interface ButtonProps
   variant?: ButtonVariant;
 }
 
-/** Pillen-Button im Punchcard-Look (analog LoginForm/LogoutButton). */
+/** Pillen-Button im „Ticket & Tinte“-Look (Tokens aus globals.css). */
 export function Button({
   variant = "primary",
   type = "button",

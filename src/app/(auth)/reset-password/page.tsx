@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CheckCircle, Warning } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/Spinner";
+import { inputClassName } from "@/components/ui/Input";
 
 /**
  * Zielseite des Recovery-Links aus der "Passwort vergessen"-E-Mail.
@@ -64,18 +66,18 @@ export default function ResetPasswordPage() {
   if (!session) {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-3xl">
-          ⚠️
+        <span className="bg-danger-soft flex h-14 w-14 items-center justify-center rounded-full text-danger">
+          <Warning size={28} weight="fill" aria-hidden="true" />
         </span>
-        <h2 className="text-lg font-semibold text-stone-800">
+        <h2 className="font-display text-xl font-semibold text-ink">
           Link ungültig oder abgelaufen
         </h2>
-        <p className="text-sm leading-6 text-stone-600">
+        <p className="text-sm leading-6 text-ink-soft">
           Bitte fordere einen neuen Link zum Zurücksetzen deines Passworts an.
         </p>
         <Link
           href="/forgot-password"
-          className="mt-2 rounded-full bg-amber-500 px-6 py-3 font-semibold text-white shadow-md shadow-amber-500/25 transition hover:bg-amber-600 active:scale-[0.98]"
+          className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98]"
         >
           Neuen Link anfordern
         </Link>
@@ -86,13 +88,13 @@ export default function ResetPasswordPage() {
   if (done) {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-3xl">
-          ✅
+        <span className="bg-accent-soft flex h-14 w-14 items-center justify-center rounded-full text-success">
+          <CheckCircle size={28} weight="fill" aria-hidden="true" />
         </span>
-        <h2 className="text-lg font-semibold text-stone-800">
+        <h2 className="font-display text-xl font-semibold text-ink">
           Passwort geändert!
         </h2>
-        <p className="text-sm leading-6 text-stone-600">
+        <p className="text-sm leading-6 text-ink-soft">
           Du wirst gleich zu deinem Dashboard weitergeleitet …
         </p>
       </div>
@@ -101,14 +103,14 @@ export default function ResetPasswordPage() {
 
   return (
     <>
-      <h2 className="mb-6 text-center text-xl font-semibold text-stone-800">
+      <h2 className="mb-6 text-center font-display text-2xl font-semibold tracking-tight text-ink">
         Neues Passwort festlegen
       </h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="password"
-            className="text-sm font-medium text-stone-700"
+            className="text-sm font-medium text-ink-soft"
           >
             Neues Passwort
           </label>
@@ -121,14 +123,14 @@ export default function ResetPasswordPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Mindestens 8 Zeichen"
-            className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-stone-800 shadow-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+            className={inputClassName}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="passwordConfirm"
-            className="text-sm font-medium text-stone-700"
+            className="text-sm font-medium text-ink-soft"
           >
             Passwort wiederholen
           </label>
@@ -141,13 +143,13 @@ export default function ResetPasswordPage() {
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
             placeholder="••••••••"
-            className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-stone-800 shadow-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+            className={inputClassName}
           />
         </div>
 
         {error && (
           <p
-            className="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700"
+            className="bg-danger-soft rounded-2xl px-4 py-2.5 text-sm text-danger"
             role="alert"
           >
             {error}
@@ -157,7 +159,7 @@ export default function ResetPasswordPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="mt-2 rounded-full bg-amber-500 px-6 py-3 font-semibold text-white shadow-md shadow-amber-500/25 transition hover:bg-amber-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "Wird gespeichert …" : "Passwort speichern"}
         </button>

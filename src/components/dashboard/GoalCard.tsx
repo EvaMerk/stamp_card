@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, type PanInfo } from "motion/react";
+import { Confetti } from "@phosphor-icons/react";
 import { GoalAnalytics } from "@/components/analytics/GoalAnalytics";
+import { GoalIcon } from "@/components/goals/GoalIcon";
 import { useGoalStamps } from "@/hooks/useGoalStamps";
 import {
   activeCardIndex,
@@ -15,35 +17,42 @@ import type { Goal, GoalCardReward } from "@/lib/goals/types";
 import { PunchCardGrid } from "@/components/punchcard/PunchCardGrid";
 import { Spinner } from "@/components/ui/Spinner";
 
-const FALLBACK_COLOR = "#f59e0b";
+const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 
 /**
- * Dashboard-Kachel eines Ziels: Header (Symbol/Titel/Farbe) und darunter der
- * Swipe-Container mit zwei Panels — Stempelkarte ↔ Analytics (Plotly-Chart +
- * Kartenübersicht). Umschalten per horizontalem Wischen (motion drag="x")
- * oder per Klick auf die Punkte-Indikatoren.
+ * Dashboard-Kachel eines Ziels (Mini-Ticket): Header (Symbol/Titel/Farbe)
+ * und darunter der Swipe-Container mit zwei Panels — Stempelkarte ↔
+ * Analytics (Plotly-Chart + Kartenübersicht). Umschalten per horizontalem
+ * Wischen (motion drag="x") oder per Klick auf die Punkte-Indikatoren.
  */
 export function GoalCard({ goal }: { goal: Goal }) {
   const color = goal.color ?? FALLBACK_COLOR;
 
   return (
-    <article className="flex flex-col gap-4 rounded-3xl border border-amber-100 bg-white p-5 shadow-xl shadow-amber-900/5">
+    <article className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] border border-hairline bg-surface p-5 shadow-card">
+      {/* Orange-Aura in der Kachel-Ecke (dekorativ) */}
+      <span className="aura absolute -left-12 -top-12 h-36 w-36" aria-hidden="true" />
+
       <Link
         href={`/goal?id=${goal.id}`}
-        className="group flex items-center gap-3"
+        className="group relative flex items-center gap-3"
       >
         <span
-          className="flex h-11 w-11 shrink-0 rotate-[-6deg] items-center justify-center rounded-xl border-2 border-dashed text-xl transition group-hover:rotate-0"
-          style={{ borderColor: `${color}88`, backgroundColor: `${color}1a` }}
+          className="flex h-11 w-11 shrink-0 rotate-[-6deg] items-center justify-center rounded-full transition group-hover:rotate-0"
+          style={{
+            border: `2px solid color-mix(in srgb, ${color} 55%, transparent)`,
+            backgroundColor: `color-mix(in srgb, ${color} 12%, var(--surface))`,
+            color,
+          }}
           aria-hidden="true"
         >
-          {goal.icon ?? "🎯"}
+          <GoalIcon name={goal.icon} size={22} />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-bold tracking-tight text-stone-800 group-hover:text-amber-700">
+          <span className="block truncate font-display text-lg font-bold tracking-tight text-ink group-hover:text-accent-strong">
             {goal.title}
           </span>
-          <span className="block text-xs text-stone-400">
+          <span className="block text-xs text-ink-faint">
             Details ansehen →
           </span>
         </span>
@@ -193,14 +202,14 @@ export function GoalCardSwipe({
             onClick={() => show(index as 0 | 1)}
             aria-label={`${label} anzeigen`}
             aria-pressed={view === index}
-            className="flex h-6 w-6 items-center justify-center rounded-full transition hover:bg-stone-100"
+            className="flex h-6 w-6 items-center justify-center rounded-full transition hover:bg-sunken"
           >
             <span
               aria-hidden="true"
               className={`block rounded-full transition-all duration-300 ${
                 view === index
-                  ? "h-2 w-5 bg-amber-500"
-                  : "h-2 w-2 bg-stone-300"
+                  ? "h-2 w-5 bg-accent"
+                  : "h-2 w-2 bg-ink-faint/50"
               }`}
             />
           </button>
@@ -211,7 +220,7 @@ export function GoalCardSwipe({
 }
 
 /**
- * Punch-Bereich der Kachel: Fortschrittszeile + aktive Stempelkarte.
+ * Punch-Bereich der Kachel: Fortschrittszeile + aktives Mitglieds-Ticket.
  * (Panel A des Swipe-Containers — Innenleben unverändert aus Phase 2.)
  */
 function GoalCardPunchPanel({ goal }: { goal: Goal }) {
@@ -251,11 +260,15 @@ function GoalCardPunchPanel({ goal }: { goal: Goal }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm font-medium text-stone-500">
-        {stampCount}/{goal.target_count} · Karte {activeCard + 1}/{cards}
+      <p className="text-sm font-medium text-ink-soft">
+        <span className="font-display font-bold text-ink">
+          {stampCount}/{goal.target_count}
+        </span>{" "}
+        · Karte {activeCard + 1}/{cards}
         {remaining === 0 && (
-          <span className="ml-2 font-semibold text-amber-600">
-            Ziel erreicht! 🎉
+          <span className="ml-2 inline-flex items-center gap-1 font-semibold text-accent-strong">
+            Ziel erreicht!
+            <Confetti size={14} weight="fill" aria-hidden="true" />
           </span>
         )}
       </p>
@@ -270,7 +283,7 @@ function GoalCardPunchPanel({ goal }: { goal: Goal }) {
 
       {error && (
         <p
-          className="rounded-xl bg-red-50 px-4 py-2.5 text-xs text-red-700"
+          className="bg-danger-soft rounded-2xl px-4 py-2.5 text-xs text-danger"
           role="alert"
         >
           {error}

@@ -5,8 +5,8 @@ export function Spinner({ label = "Lädt …" }: { label?: string }) {
       role="status"
       aria-live="polite"
     >
-      <span className="h-10 w-10 animate-spin rounded-full border-4 border-amber-200 border-t-amber-500" />
-      <span className="text-sm text-stone-500">{label}</span>
+      <span className="h-10 w-10 animate-spin rounded-full border-4 border-accent/25 border-t-accent" />
+      <span className="text-sm text-ink-faint">{label}</span>
     </div>
   );
 }

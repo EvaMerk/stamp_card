@@ -1,13 +1,21 @@
 "use client";
 
 /**
- * Übersicht aller Karten eines Ziels: Status (✓ voll / ⏳ aktiv / ○ offen),
- * Stempelstand, Belohnung (Karten-Override vor goals.reward_text) und für
- * volle Karten das Abschlussdatum (spätester Stempel der Karte).
+ * Übersicht aller Karten eines Ziels: Status (voll / aktiv / offen als
+ * Phosphor-Piktogramme), Stempelstand, Belohnung (Karten-Override vor
+ * goals.reward_text) und für volle Karten das Abschlussdatum (spätester
+ * Stempel der Karte).
  */
 
 import { format, isValid, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
+import {
+  CheckCircle,
+  Circle,
+  Gift,
+  HourglassMedium,
+  type Icon,
+} from "@phosphor-icons/react";
 import {
   activeCardIndex,
   slotsForCard,
@@ -19,11 +27,26 @@ type CardStatus = "full" | "active" | "open";
 
 const STATUS_META: Record<
   CardStatus,
-  { icon: string; label: string; iconClass: string }
+  { icon: Icon; weight: "fill" | "bold"; label: string; iconClass: string }
 > = {
-  full: { icon: "✓", label: "voll", iconClass: "text-emerald-600" },
-  active: { icon: "⏳", label: "aktiv", iconClass: "text-amber-500" },
-  open: { icon: "○", label: "offen", iconClass: "text-stone-300" },
+  full: {
+    icon: CheckCircle,
+    weight: "fill",
+    label: "voll",
+    iconClass: "text-success",
+  },
+  active: {
+    icon: HourglassMedium,
+    weight: "fill",
+    label: "aktiv",
+    iconClass: "text-accent",
+  },
+  open: {
+    icon: Circle,
+    weight: "bold",
+    label: "offen",
+    iconClass: "text-ink-faint",
+  },
 };
 
 export interface CardOverviewListProps {
@@ -71,38 +94,40 @@ export function CardOverviewList({
     >
       {rows.map((row) => {
         const meta = STATUS_META[row.status];
+        const StatusIcon = meta.icon;
         return (
           <li
             key={row.card}
-            className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm ${
-              row.status === "active" ? "bg-amber-50" : "bg-stone-50/70"
+            className={`flex items-center gap-2.5 rounded-2xl px-3 py-2 text-sm ${
+              row.status === "active" ? "bg-accent-soft" : "bg-sunken/60"
             }`}
           >
-            <span
+            <StatusIcon
+              size={15}
+              weight={meta.weight}
               aria-hidden="true"
-              className={`w-4 shrink-0 text-center text-sm ${meta.iconClass}`}
-            >
-              {meta.icon}
-            </span>
+              className={`shrink-0 ${meta.iconClass}`}
+            />
             <span className="sr-only">{meta.label}</span>
-            <span className="shrink-0 font-medium text-stone-700">
+            <span className="shrink-0 font-medium text-ink">
               Karte {row.card + 1}
             </span>
-            <span className="shrink-0 text-xs tabular-nums text-stone-500">
+            <span className="shrink-0 text-xs tabular-nums text-ink-soft">
               {row.count}/{row.slotCount}
             </span>
             {row.reward ? (
               <span
-                className="min-w-0 flex-1 truncate text-xs text-stone-500"
+                className="flex min-w-0 flex-1 items-center gap-1 truncate text-xs text-ink-soft"
                 title={row.reward}
               >
-                🎁 {row.reward}
+                <Gift size={12} weight="fill" aria-hidden="true" className="shrink-0" />
+                <span className="truncate">{row.reward}</span>
               </span>
             ) : (
               <span className="flex-1" aria-hidden="true" />
             )}
             {row.completedAt && (
-              <span className="shrink-0 text-xs text-stone-400">
+              <span className="shrink-0 text-xs text-ink-faint">
                 {format(row.completedAt, "d. MMM yyyy", { locale: de })}
               </span>
             )}

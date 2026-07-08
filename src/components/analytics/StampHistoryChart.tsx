@@ -9,6 +9,10 @@
  * geladen. Plotly landet dadurch weder im Server-Bundle noch im initialen
  * Routen-Chunk — kompatibel mit `output: 'export'` (Capacitor).
  *
+ * Theme: Plotly kann keine CSS-Variablen lesen — usePrefersDark() wählt die
+ * Light-/Dark-Farbvariante aus chart-theme.ts und rendert bei Theme-Wechsel
+ * neu (Hintergründe bleiben transparent, die Seite scheint durch).
+ *
  * Aufbau (ein Plot, zwei y-Achsen-Zeilen mit gemeinsamer Zeitachse):
  * - oben (~2/3): kumulative Fortschritts-Treppenlinie in Zielfarbe,
  *   gestrichelte Ziellinie („Ziel") + gepunktete Kartengrenzen als Shapes
@@ -20,14 +24,12 @@
 import Plotly from "plotly.js-basic-dist-min";
 import createPlotlyComponent from "react-plotly.js/factory";
 import type { Config, Data, Layout } from "plotly.js";
+import { usePrefersDark } from "@/hooks/usePrefersDark";
+import { chartTheme } from "@/lib/analytics/chart-theme";
 import type { StampChartData } from "@/lib/analytics/chart-data";
 
 const Plot = createPlotlyComponent(Plotly);
 
-const STONE_400 = "#a8a29e";
-const STONE_200 = "#e7e5e4";
-const STONE_100 = "#f5f5f4";
-const AMBER_600 = "#d97706";
 const FONT_STACK = "ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 export interface StampHistoryChartProps {
@@ -43,6 +45,7 @@ export default function StampHistoryChart({
   color,
   height = 240,
 }: StampHistoryChartProps) {
+  const theme = chartTheme(usePrefersDark());
   const { cumulative, target, cardBoundaries, frequency } = data;
   const maxY = Math.max(target, cumulative.y[cumulative.y.length - 1] ?? 0);
 
@@ -75,22 +78,22 @@ export default function StampHistoryChart({
     plot_bgcolor: "rgba(0,0,0,0)",
     showlegend: false,
     dragmode: false,
-    font: { family: FONT_STACK, size: 11, color: STONE_400 },
+    font: { family: FONT_STACK, size: 11, color: theme.tick },
     // Numerisches Datumsformat statt (englischer) Monatsnamen — das Basic-
     // Bundle enthält keine deutsche Plotly-Locale.
     xaxis: {
       type: "date",
       tickformat: "%d.%m.%y",
-      tickfont: { size: 10, color: STONE_400 },
+      tickfont: { size: 10, color: theme.tick },
       showgrid: false,
       zeroline: false,
     },
     yaxis: {
       domain: [0.34, 1],
       range: [0, maxY * 1.12],
-      gridcolor: STONE_100,
+      gridcolor: theme.grid,
       zeroline: false,
-      tickfont: { size: 10, color: STONE_400 },
+      tickfont: { size: 10, color: theme.tick },
       fixedrange: true,
     },
     yaxis2: {
@@ -99,7 +102,7 @@ export default function StampHistoryChart({
       showgrid: false,
       zeroline: false,
       nticks: 3,
-      tickfont: { size: 9, color: STONE_400 },
+      tickfont: { size: 9, color: theme.tick },
       fixedrange: true,
     },
     shapes: [
@@ -111,7 +114,7 @@ export default function StampHistoryChart({
         yref: "y" as const,
         y0: y,
         y1: y,
-        line: { color: STONE_200, width: 1, dash: "dot" as const },
+        line: { color: theme.boundary, width: 1, dash: "dot" as const },
       })),
       {
         type: "line",
@@ -121,7 +124,7 @@ export default function StampHistoryChart({
         yref: "y",
         y0: target,
         y1: target,
-        line: { color: AMBER_600, width: 1.5, dash: "dash" },
+        line: { color: theme.target, width: 1.5, dash: "dash" },
       },
     ],
     annotations: [
@@ -134,13 +137,13 @@ export default function StampHistoryChart({
         yanchor: "bottom",
         text: "Ziel",
         showarrow: false,
-        font: { size: 10, color: AMBER_600 },
+        font: { size: 10, color: theme.target },
       },
     ],
     hoverlabel: {
-      bgcolor: "#292524",
-      bordercolor: "#292524",
-      font: { family: FONT_STACK, size: 11, color: "#fafaf9" },
+      bgcolor: theme.hoverBg,
+      bordercolor: theme.hoverBg,
+      font: { family: FONT_STACK, size: 11, color: theme.hoverText },
     },
   };
 

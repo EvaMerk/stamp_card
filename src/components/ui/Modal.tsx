@@ -10,8 +10,8 @@ export interface ModalProps {
 }
 
 /**
- * Simples Modal (z.B. für Lösch-Bestätigungen): Overlay + weiße Karte im
- * App-Stil. Schließt per Escape und Klick auf den Hintergrund.
+ * Simples Modal (z.B. für Lösch-Bestätigungen): Overlay + Karte im
+ * „Ticket & Tinte“-Stil. Schließt per Escape und Klick auf den Hintergrund.
  */
 export function Modal({ open, onClose, title, children }: ModalProps) {
   useEffect(() => {
@@ -33,15 +33,16 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       aria-label={title}
     >
       <div
-        className="absolute inset-0 bg-stone-900/40"
+        className="absolute inset-0 bg-ink/40"
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md rounded-3xl border border-amber-100 bg-white p-6 shadow-xl shadow-amber-900/10">
-        <h2 className="mb-3 text-lg font-bold tracking-tight text-stone-800">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[20px] border border-hairline bg-surface p-6 shadow-card">
+        <span className="aura absolute -right-10 -top-10 h-36 w-36" aria-hidden="true" />
+        <h2 className="relative mb-3 font-display text-xl font-bold tracking-tight text-ink">
           {title}
         </h2>
-        {children}
+        <div className="relative">{children}</div>
       </div>
     </div>
   );

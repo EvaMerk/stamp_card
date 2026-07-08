@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { StampAnimation } from "./StampAnimation";
 
@@ -11,7 +12,7 @@ export interface PunchSlotProps {
   state: PunchSlotState;
   /** 1-basierte Anzeige-Nummer des Felds. */
   slotNumber: number;
-  /** Akzentfarbe des Ziels (Hex). */
+  /** Akzentfarbe des Ziels (Hex) — färbt das aktive Feld. */
   color: string;
   /** Wird nur für das aktive freie Feld aufgerufen. */
   onStamp?: () => void;
@@ -20,12 +21,14 @@ export interface PunchSlotProps {
 }
 
 /**
- * Ein einzelnes Feld der Stempelkarte.
+ * Ein einzelnes Feld der Stempelkarte („Ticket & Tinte“).
  *
  * Zustände:
- * - `filled`      — permanenter Stempelabdruck
+ * - `filled`      — permanenter Stempelabdruck: Tinte (Light) bzw. glühendes
+ *                   Amber-Licht (Dark), mit leichter deterministischer
+ *                   Rotation pro Feld → wirkt handgestempelt
  * - `active`      — nächstes sequenzielles freies Feld, tappbar, dezenter Puls
- * - `locked`      — zukünftiges Feld, gedimmt
+ * - `locked`      — zukünftiges Feld, flache tonale Fläche
  *
  * Stempel-Ablauf (Phase 3): Klick auf das aktive Feld startet die
  * {@link StampAnimation} (Overlay) und feuert parallel `onStamp()` (der
@@ -49,6 +52,9 @@ export function PunchSlot({
   const [animating, setAnimating] = useState(false);
   // Hat der Stempel schon aufgesetzt? (→ Tinte unter dem Stempel zeigen)
   const [impacted, setImpacted] = useState(false);
+
+  // Deterministische „handgestempelte“ Rotation pro Feld (kein Math.random).
+  const inkRotation = ((slotNumber * 7) % 13) - 6;
 
   // Einziger Stempel-Auslösepfad.
   function handleClick() {
@@ -81,7 +87,7 @@ export function PunchSlot({
       {baseState === "filled" ? (
         // Platzhalter unter der (permanenten) Tinte — trägt keine Semantik.
         <span
-          className="block h-full w-full rounded-full bg-white"
+          className="block h-full w-full rounded-full"
           aria-hidden="true"
         />
       ) : baseState === "active" ? (
@@ -90,7 +96,7 @@ export function PunchSlot({
           onClick={handleClick}
           disabled={disabled}
           className={cn(
-            "flex aspect-square w-full items-center justify-center rounded-full border-2 border-dashed bg-white text-sm font-semibold transition disabled:cursor-not-allowed",
+            "flex aspect-square w-full items-center justify-center rounded-full border-2 border-dashed bg-transparent text-sm font-semibold transition disabled:cursor-not-allowed",
             animating
               ? "cursor-default"
               : "cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-60",
@@ -103,39 +109,34 @@ export function PunchSlot({
         </button>
       ) : (
         <span
-          className="flex aspect-square w-full items-center justify-center rounded-full border-2 border-dashed border-stone-200 bg-stone-50 text-sm font-medium text-stone-300"
+          className="flex aspect-square w-full items-center justify-center rounded-full bg-sunken text-sm font-medium text-ink-faint"
           aria-label={`Feld ${slotNumber}: noch gesperrt`}
         >
           {slotNumber}
         </span>
       )}
 
-      {/* Stempelabdruck (Tinte). Exit-Fade deckt den Revert-Fall ab: schlägt
+      {/* Stempelabdruck (Tinte): Light = Tintenschwarz, Dark = Amber-Glow
+          (.stamp-ink-Tokens). Exit-Fade deckt den Revert-Fall ab: schlägt
           der Insert fehl, dreht das Prop zurück auf `active` und die Tinte
           blendet sanft aus — kein hängendes Overlay. */}
       <AnimatePresence initial={false}>
         {inkVisible && (
           <motion.span
             key="ink"
-            className="absolute inset-0 flex items-center justify-center rounded-full shadow-inner"
-            style={{ backgroundColor: color }}
+            className="stamp-ink absolute inset-0 flex items-center justify-center rounded-full"
             role="img"
             aria-label={`Feld ${slotNumber}: gestempelt`}
-            initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 1, scale: 1, rotate: inkRotation }}
+            animate={{ opacity: 1, scale: 1, rotate: inkRotation }}
             exit={
               reduceMotion
                 ? { opacity: 0 }
-                : { opacity: 0, scale: 0.75 }
+                : { opacity: 0, scale: 0.75, rotate: inkRotation }
             }
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <span
-              className="-rotate-6 text-lg font-black text-white drop-shadow-sm"
-              aria-hidden="true"
-            >
-              ✓
-            </span>
+            <Check size={18} weight="bold" aria-hidden="true" />
           </motion.span>
         )}
       </AnimatePresence>
@@ -143,7 +144,6 @@ export function PunchSlot({
       {/* Fliegender Stempel — pro Feld genau einer gleichzeitig. */}
       {animating && (
         <StampAnimation
-          color={color}
           onImpact={() => setImpacted(true)}
           onComplete={() => {
             setAnimating(false);

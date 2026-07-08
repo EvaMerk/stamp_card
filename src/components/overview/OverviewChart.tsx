@@ -10,14 +10,21 @@
  * `next/dynamic(..., { ssr: false })` geladen — Plotly landet weder im
  * Server-Bundle noch im initialen Routen-Chunk (Export-/Capacitor-kompatibel).
  *
+ * Theme: usePrefersDark() wählt die Light-/Dark-Farbvariante aus
+ * chart-theme.ts (Plotly kann keine CSS-Variablen lesen).
+ *
  * Prozent statt absoluter Stempel auf der y-Achse, damit unterschiedlich
  * große Ziele (100x Sport vs. 20x Lesen) auf einer Achse vergleichbar sind.
+ * Legende = nur der Titel (Plain-Text — Phosphor-Icon-Namen aus goals.icon
+ * werden hier bewusst NICHT angezeigt).
  */
 
 import Plotly from "plotly.js-basic-dist-min";
 import createPlotlyComponent from "react-plotly.js/factory";
 import type { Config, Data, Layout } from "plotly.js";
 import { format, parseISO } from "date-fns";
+import { usePrefersDark } from "@/hooks/usePrefersDark";
+import { chartTheme } from "@/lib/analytics/chart-theme";
 import type {
   CardCompletion,
   GoalPercentSeries,
@@ -26,11 +33,8 @@ import type { Goal } from "@/lib/goals/types";
 
 const Plot = createPlotlyComponent(Plotly);
 
-const STONE_400 = "#a8a29e";
-const STONE_100 = "#f5f5f4";
-const AMBER_600 = "#d97706";
 const FONT_STACK = "ui-sans-serif, system-ui, -apple-system, sans-serif";
-const FALLBACK_COLOR = "#f59e0b";
+const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 
 export interface OverviewChartProps {
   goals: Goal[];
@@ -48,9 +52,10 @@ export default function OverviewChart({
   completions,
   height = 300,
 }: OverviewChartProps) {
+  const theme = chartTheme(usePrefersDark());
   const seriesByGoal = new Map(series.map((s) => [s.goalId, s]));
 
-  // Legende = Ziel-Symbol + Titel; Linien in der jeweiligen Zielfarbe.
+  // Legende = Ziel-Titel; Linien in der jeweiligen Zielfarbe.
   const lineTraces: Data[] = goals.flatMap((goal) => {
     const goalSeries = seriesByGoal.get(goal.id);
     if (!goalSeries || goalSeries.x.length === 0) return [];
@@ -59,7 +64,7 @@ export default function OverviewChart({
       {
         type: "scatter",
         mode: "lines+markers",
-        name: `${goal.icon ?? "🎯"} ${goal.title}`,
+        name: goal.title,
         x: goalSeries.x,
         y: goalSeries.y,
         line: { color, width: 2.5, shape: "hv" },
@@ -80,7 +85,7 @@ export default function OverviewChart({
       {
         type: "scatter",
         mode: "markers",
-        name: `${goal.icon ?? "🎯"} ${goal.title}`,
+        name: goal.title,
         showlegend: false,
         x: goalCompletions.map((c) => c.completedAt),
         y: goalCompletions.map((c) => c.percent),
@@ -88,7 +93,7 @@ export default function OverviewChart({
           symbol: "star",
           size: 13,
           color,
-          line: { color: "#ffffff", width: 1 },
+          line: { color: theme.markerLine, width: 1 },
         },
         hovertext: goalCompletions.map(
           (c) =>
@@ -113,16 +118,16 @@ export default function OverviewChart({
       x: 0,
       y: -0.22,
       yanchor: "top",
-      font: { family: FONT_STACK, size: 11, color: "#57534e" },
+      font: { family: FONT_STACK, size: 11, color: theme.legend },
     },
     dragmode: false,
-    font: { family: FONT_STACK, size: 11, color: STONE_400 },
+    font: { family: FONT_STACK, size: 11, color: theme.tick },
     // Numerisches Datumsformat statt (englischer) Monatsnamen — das Basic-
     // Bundle enthält keine deutsche Plotly-Locale.
     xaxis: {
       type: "date",
       tickformat: "%d.%m.%y",
-      tickfont: { size: 10, color: STONE_400 },
+      tickfont: { size: 10, color: theme.tick },
       showgrid: false,
       zeroline: false,
       fixedrange: true,
@@ -130,9 +135,9 @@ export default function OverviewChart({
     yaxis: {
       range: [0, 112],
       ticksuffix: " %",
-      gridcolor: STONE_100,
+      gridcolor: theme.grid,
       zeroline: false,
-      tickfont: { size: 10, color: STONE_400 },
+      tickfont: { size: 10, color: theme.tick },
       fixedrange: true,
     },
     shapes: [
@@ -144,7 +149,7 @@ export default function OverviewChart({
         yref: "y",
         y0: 100,
         y1: 100,
-        line: { color: AMBER_600, width: 1.5, dash: "dash" },
+        line: { color: theme.target, width: 1.5, dash: "dash" },
       },
     ],
     annotations: [
@@ -157,13 +162,13 @@ export default function OverviewChart({
         yanchor: "bottom",
         text: "Ziel",
         showarrow: false,
-        font: { size: 10, color: AMBER_600 },
+        font: { size: 10, color: theme.target },
       },
     ],
     hoverlabel: {
-      bgcolor: "#292524",
-      bordercolor: "#292524",
-      font: { family: FONT_STACK, size: 11, color: "#fafaf9" },
+      bgcolor: theme.hoverBg,
+      bordercolor: theme.hoverBg,
+      font: { family: FONT_STACK, size: 11, color: theme.hoverText },
     },
   };
 

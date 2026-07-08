@@ -3,9 +3,15 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 
-/** Gemeinsamer Look für Text-Eingaben (analog LoginForm). */
+/** Gemeinsamer Look für Text-Eingaben: Pillenform, Tokens aus globals.css. */
 export const inputClassName =
-  "rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-stone-800 shadow-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-400";
+  "rounded-full border border-hairline bg-surface px-4 py-2.5 text-ink shadow-sm outline-none transition placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-faint";
+
+/** Textarea-Variante: Pillenform funktioniert mehrzeilig nicht — großzügiger Radius. */
+export const textareaClassName = inputClassName.replace(
+  "rounded-full",
+  "rounded-3xl",
+);
 
 interface FieldChromeProps {
   label?: string;
@@ -32,19 +38,19 @@ export function Input({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-stone-700">
+        <label htmlFor={inputId} className="text-sm font-medium text-ink-soft">
           {label}
         </label>
       )}
       <input
         id={inputId}
         aria-invalid={error ? true : undefined}
-        className={cn(inputClassName, error && "border-red-300", className)}
+        className={cn(inputClassName, error && "border-danger/50", className)}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-stone-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-ink-faint">{hint}</p>}
       {error && (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="text-xs text-danger" role="alert">
           {error}
         </p>
       )}
@@ -72,7 +78,7 @@ export function Textarea({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-stone-700">
+        <label htmlFor={inputId} className="text-sm font-medium text-ink-soft">
           {label}
         </label>
       )}
@@ -81,16 +87,16 @@ export function Textarea({
         rows={rows}
         aria-invalid={error ? true : undefined}
         className={cn(
-          inputClassName,
+          textareaClassName,
           "resize-y",
-          error && "border-red-300",
+          error && "border-danger/50",
           className,
         )}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-stone-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-ink-faint">{hint}</p>}
       {error && (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="text-xs text-danger" role="alert">
           {error}
         </p>
       )}

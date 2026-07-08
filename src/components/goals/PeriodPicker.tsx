@@ -43,8 +43,9 @@ function formatDate(date: Date): string {
 }
 
 /**
- * Zeitraum-Auswahl: Segmented Control (Jahr/Monat/Woche/Eigener Zeitraum) +
- * Startdatum; Enddatum nur bei eigenem Zeitraum, sonst abgeleitete Anzeige.
+ * Zeitraum-Auswahl: Pillen-Segmented-Control (Jahr/Monat/Woche/Eigener
+ * Zeitraum) + Startdatum; Enddatum nur bei eigenem Zeitraum, sonst
+ * abgeleitete Anzeige.
  */
 export function PeriodPicker({
   periodType,
@@ -61,10 +62,10 @@ export function PeriodPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm font-medium text-stone-700">Zeitraum</span>
+      <span className="text-sm font-medium text-ink-soft">Zeitraum</span>
 
       <div
-        className="grid grid-cols-2 gap-1 rounded-2xl bg-stone-100 p-1 sm:grid-cols-4"
+        className="grid grid-cols-2 gap-1 rounded-full bg-sunken p-1 max-sm:rounded-[20px] sm:grid-cols-4"
         role="radiogroup"
         aria-label="Zeitraum-Typ"
       >
@@ -78,10 +79,10 @@ export function PeriodPicker({
               aria-checked={selected}
               onClick={() => onPeriodTypeChange(type)}
               className={cn(
-                "rounded-xl px-3 py-2 text-sm font-medium transition",
+                "rounded-full px-3 py-2 text-sm font-medium transition",
                 selected
-                  ? "bg-white text-amber-700 shadow-sm"
-                  : "text-stone-500 hover:text-stone-700",
+                  ? "bg-surface text-accent-strong shadow-sm"
+                  : "text-ink-soft hover:text-ink",
               )}
             >
               {PERIOD_TYPE_LABELS[type]}
@@ -111,7 +112,7 @@ export function PeriodPicker({
       </div>
 
       {periodType !== "custom" && derivedEnd && isValid(start) && (
-        <p className="text-xs text-stone-500">
+        <p className="text-xs text-ink-soft">
           Zeitraum: {formatDate(start)} – {formatDate(derivedEnd)} (
           {PERIOD_TYPE_LABELS[periodType]})
         </p>

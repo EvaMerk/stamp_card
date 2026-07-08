@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { authErrorMessage } from "@/lib/supabase/auth-errors";
+import { inputClassName } from "@/components/ui/Input";
 
 export function LoginForm() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-stone-700">
+        <label htmlFor="email" className="text-sm font-medium text-ink-soft">
           E-Mail
         </label>
         <input
@@ -49,7 +50,7 @@ export function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="du@beispiel.de"
-          className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-stone-800 shadow-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+          className={inputClassName}
         />
       </div>
 
@@ -57,13 +58,13 @@ export function LoginForm() {
         <div className="flex items-center justify-between">
           <label
             htmlFor="password"
-            className="text-sm font-medium text-stone-700"
+            className="text-sm font-medium text-ink-soft"
           >
             Passwort
           </label>
           <Link
             href="/forgot-password"
-            className="text-sm font-medium text-amber-600 hover:text-amber-700"
+            className="text-sm font-medium text-accent-strong hover:underline"
           >
             Passwort vergessen?
           </Link>
@@ -76,13 +77,13 @@ export function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-stone-800 shadow-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+          className={inputClassName}
         />
       </div>
 
       {error && (
         <p
-          className="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700"
+          className="bg-danger-soft rounded-2xl px-4 py-2.5 text-sm text-danger"
           role="alert"
         >
           {error}
@@ -92,16 +93,16 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-2 rounded-full bg-amber-500 px-6 py-3 font-semibold text-white shadow-md shadow-amber-500/25 transition hover:bg-amber-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {submitting ? "Wird angemeldet …" : "Anmelden"}
       </button>
 
-      <p className="text-center text-sm text-stone-500">
+      <p className="text-center text-sm text-ink-soft">
         Noch kein Konto?{" "}
         <Link
           href="/signup"
-          className="font-medium text-amber-600 hover:text-amber-700"
+          className="font-medium text-accent-strong hover:underline"
         >
           Jetzt registrieren
         </Link>
