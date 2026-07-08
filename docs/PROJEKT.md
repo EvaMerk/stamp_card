@@ -231,6 +231,7 @@ Stolperfallen:
 | Swipe → Statistik pro Ziel (Plotly + Kartenliste) | ✅ live getestet |
 | Dashboard-Tab „Übersicht" (alle Ziele, %-Chart, Feed) | ✅ live getestet |
 | Statischer Export-Build (Capacitor-Bereitschaft) | ✅ läuft durch |
+| PWA installierbar (Manifest `src/app/manifest.ts`, Icons, iOS-Meta) | ✅ umgesetzt (Juli 2026) |
 | Git-Repo, Deployment, Capacitor, E-Mail-Bestätigung an | ❌ offen → §9 |
 
 ---
@@ -296,8 +297,6 @@ Erst sinnvoll, wenn 9.1/9.2 stehen und die Web-App stabil genutzt wird.
   bewusste Ausnahme von Regel §2.6, als solche dokumentieren.
 - **Ziele archivieren**: `is_archived` existiert bereits in der DB; UI-Toggle
   im Edit-Formular + Filter in `getGoals` + Bereich „Archiviert" im Dashboard.
-- **PWA-Manifest + Icons**: macht die Web-App am Handy installierbar
-  (Zwischenlösung vor Capacitor).
 - **Zeitraum-Ende-Verhalten**: aktuell ist der Zeitraum rein informativ;
   Erinnerung/Reset/„geschafft?"-Auswertung am Periodenende wäre ein
   natürliches nächstes Produkt-Feature.
