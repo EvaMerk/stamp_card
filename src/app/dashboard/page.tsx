@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { SealCheck } from "@phosphor-icons/react";
+import { GearSix, SealCheck } from "@phosphor-icons/react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -58,7 +59,7 @@ function DashboardContent() {
       <header className="relative mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span
-            className="flex h-11 w-11 rotate-[-6deg] items-center justify-center rounded-full bg-stamp text-stamp-check shadow-card"
+            className="flex h-11 w-11 rotate-[-6deg] items-center justify-center rounded-full bg-accent text-accent-contrast shadow-card"
             aria-hidden="true"
           >
             <SealCheck size={24} weight="fill" />
@@ -72,7 +73,16 @@ function DashboardContent() {
             )}
           </div>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/einstellungen"
+            aria-label="Einstellungen"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface text-ink-soft shadow-sm transition hover:border-accent/50 hover:text-accent-strong active:scale-[0.98]"
+          >
+            <GearSix size={20} weight="bold" />
+          </Link>
+          <LogoutButton />
+        </div>
       </header>
 
       <div

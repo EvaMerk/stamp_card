@@ -1,25 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTheme } from "@/lib/theme/ThemeProvider";
 
 /**
- * Folgt `prefers-color-scheme: dark` live (matchMedia-Listener).
+ * Liefert `true`, wenn das AUFGELÖSTE Theme dunkel ist — also der Wert, den der
+ * Nutzer per Einstellungen (System/Hell/Dunkel) tatsächlich sieht, NICHT die
+ * rohe OS-Präferenz.
  *
- * Verwendung: Plotly kann keine CSS-Variablen lesen — die Charts wählen
- * damit die passende Farbvariante aus src/lib/analytics/chart-theme.ts und
- * rendern beim Theme-Wechsel neu. Initial `false` (SSR-sicher); der echte
- * Wert kommt im ersten Effect — die Charts sind ohnehin rein client-seitig.
+ * Verwendung: Plotly kann keine CSS-Variablen lesen — die Charts wählen damit
+ * die passende Farbvariante aus src/lib/analytics/chart-theme.ts und rendern
+ * beim Theme-Wechsel neu. Quelle ist der ThemeProvider (data-theme am <html>),
+ * damit eine manuelle Dunkel-/Hell-Wahl auch die Charts umschaltet — sonst
+ * bekäme z.B. „Dunkel" auf einem hellen OS einen hellen Chart.
  */
 export function usePrefersDark(): boolean {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    setDark(mq.matches);
-    const onChange = (event: MediaQueryListEvent) => setDark(event.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  return dark;
+  return useTheme().resolvedTheme === "dark";
 }

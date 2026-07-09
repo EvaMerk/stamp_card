@@ -13,7 +13,7 @@ export default function AuthLayout({
 
       <div className="relative mb-8 flex flex-col items-center gap-3">
         <span
-          className="flex h-16 w-16 rotate-[-6deg] items-center justify-center rounded-full bg-stamp text-stamp-check shadow-card"
+          className="flex h-16 w-16 rotate-[-6deg] items-center justify-center rounded-full bg-accent text-accent-contrast shadow-card"
           aria-hidden="true"
         >
           <SealCheck size={34} weight="fill" />

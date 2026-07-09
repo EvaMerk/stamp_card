@@ -22,7 +22,10 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#faf3e7", // Papier-Creme, wie --paper (Light) in globals.css
-    theme_color: "#e07316", // warmes Orange, wie --accent (Light) in globals.css
+    // Standard-Akzent (Amber, wie --accent Light). Ein statisches Manifest kann
+    // nicht pro Nutzer/Gerät umgefärbt werden — die In-App-Akzentwahl
+    // (data-accent, siehe globals.css) betrifft dies bewusst nicht.
+    theme_color: "#e07316",
     icons: [
       {
         src: "/icons/icon-192.png",
