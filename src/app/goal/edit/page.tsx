@@ -14,10 +14,12 @@ import { GoalForm } from "@/components/goals/GoalForm";
 import { Spinner } from "@/components/ui/Spinner";
 import { getCardRewards, getGoal } from "@/lib/goals/queries";
 import type { Goal, GoalCardReward } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 function EditGoalContent() {
   const searchParams = useSearchParams();
   const goalId = searchParams.get("id");
+  const { t } = useTranslation();
 
   // Kombinierter Lade-Zustand; `loading` wird aus `loadedFor` abgeleitet
   // (kein synchrones setState im Effect).
@@ -47,9 +49,7 @@ function EditGoalContent() {
           goal: null,
           rewards: [],
           error:
-            err instanceof Error
-              ? err.message
-              : "Das Ziel konnte nicht geladen werden.",
+            err instanceof Error ? err.message : t("goal.loadFailed"),
           loadedFor: goalId,
         });
       });
@@ -64,7 +64,7 @@ function EditGoalContent() {
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <Spinner label="Ziel wird geladen …" />
+        <Spinner label={t("goal.loading")} />
       </div>
     );
   }
@@ -73,13 +73,13 @@ function EditGoalContent() {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-lg font-semibold text-stone-700">
-          {error ?? "Dieses Ziel wurde nicht gefunden."}
+          {error ?? t("goal.notFound")}
         </p>
         <Link
           href="/dashboard"
           className="text-sm font-medium text-amber-600 hover:text-amber-700"
         >
-          ← Zurück zum Dashboard
+          {t("goal.backToDashboard")}
         </Link>
       </div>
     );
@@ -92,10 +92,10 @@ function EditGoalContent() {
           href={`/goal?id=${goal.id}`}
           className="text-sm font-medium text-amber-600 hover:text-amber-700"
         >
-          ← Zurück zum Ziel
+          {t("goal.backToGoal")}
         </Link>
         <h1 className="mt-3 text-2xl font-bold tracking-tight text-stone-800">
-          Ziel bearbeiten
+          {t("goal.editPage.title")}
         </h1>
         <p className="mt-1 text-sm text-stone-500">{goal.title}</p>
       </header>

@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { inputClassName } from "@/components/ui/Input";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 export function LoginForm() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,22 +27,26 @@ export function LoginForm() {
         password,
       });
       if (signInError) {
-        setError(authErrorMessage(signInError, "Anmeldung fehlgeschlagen."));
+        setError(authErrorMessage(t, signInError, t("auth.login.failed")));
         return;
       }
       router.replace("/dashboard");
     } catch (err) {
-      setError(authErrorMessage(err, "Anmeldung fehlgeschlagen."));
+      setError(authErrorMessage(t, err, t("auth.login.failed")));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <>
+      <h2 className="mb-6 text-center font-display text-2xl font-semibold tracking-tight text-ink">
+        {t("auth.login.heading")}
+      </h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-ink-soft">
-          E-Mail
+          {t("auth.email")}
         </label>
         <input
           id="email"
@@ -49,7 +55,7 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="du@beispiel.de"
+          placeholder={t("auth.emailPlaceholder")}
           className={inputClassName}
         />
       </div>
@@ -60,13 +66,13 @@ export function LoginForm() {
             htmlFor="password"
             className="text-sm font-medium text-ink-soft"
           >
-            Passwort
+            {t("auth.password")}
           </label>
           <Link
             href="/forgot-password"
             className="text-sm font-medium text-accent-strong hover:underline"
           >
-            Passwort vergessen?
+            {t("auth.login.forgot")}
           </Link>
         </div>
         <input
@@ -76,7 +82,7 @@ export function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
+          placeholder={t("auth.passwordPlaceholder")}
           className={inputClassName}
         />
       </div>
@@ -95,18 +101,19 @@ export function LoginForm() {
         disabled={submitting}
         className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? "Wird angemeldet …" : "Anmelden"}
+        {submitting ? t("auth.login.submitting") : t("auth.login.submit")}
       </button>
 
       <p className="text-center text-sm text-ink-soft">
-        Noch kein Konto?{" "}
+        {t("auth.login.noAccount")}{" "}
         <Link
           href="/signup"
           className="font-medium text-accent-strong hover:underline"
         >
-          Jetzt registrieren
+          {t("auth.login.signupLink")}
         </Link>
       </p>
     </form>
+    </>
   );
 }

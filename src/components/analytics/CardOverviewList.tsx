@@ -8,7 +8,6 @@
  */
 
 import { format, isValid, parseISO } from "date-fns";
-import { de } from "date-fns/locale";
 import {
   CheckCircle,
   Circle,
@@ -22,29 +21,32 @@ import {
   totalCards,
 } from "@/lib/goals/punchcard-math";
 import type { Goal, GoalCardReward, Stamp } from "@/lib/goals/types";
+import { useI18n } from "@/lib/i18n/LanguageProvider";
+import type { MessageKey } from "@/lib/i18n/messages";
+import { dateLocale } from "@/lib/i18n/date-locale";
 
 type CardStatus = "full" | "active" | "open";
 
 const STATUS_META: Record<
   CardStatus,
-  { icon: Icon; weight: "fill" | "bold"; label: string; iconClass: string }
+  { icon: Icon; weight: "fill" | "bold"; labelKey: MessageKey; iconClass: string }
 > = {
   full: {
     icon: CheckCircle,
     weight: "fill",
-    label: "voll",
+    labelKey: "analytics.status.full",
     iconClass: "text-success",
   },
   active: {
     icon: HourglassMedium,
     weight: "fill",
-    label: "aktiv",
+    labelKey: "analytics.status.active",
     iconClass: "text-accent",
   },
   open: {
     icon: Circle,
     weight: "bold",
-    label: "offen",
+    labelKey: "analytics.status.open",
     iconClass: "text-ink-faint",
   },
 };
@@ -62,6 +64,7 @@ export function CardOverviewList({
   stamps,
   rewards,
 }: CardOverviewListProps) {
+  const { t, lang } = useI18n();
   const cards = totalCards(goal.target_count, goal.card_size);
   const active = activeCardIndex(
     stamps.length,
@@ -90,7 +93,7 @@ export function CardOverviewList({
   return (
     <ul
       className="flex max-h-64 flex-col gap-1.5 overflow-y-auto pr-1"
-      aria-label="Übersicht aller Karten"
+      aria-label={t("analytics.cardsOverview")}
     >
       {rows.map((row) => {
         const meta = STATUS_META[row.status];
@@ -108,9 +111,9 @@ export function CardOverviewList({
               aria-hidden="true"
               className={`shrink-0 ${meta.iconClass}`}
             />
-            <span className="sr-only">{meta.label}</span>
+            <span className="sr-only">{t(meta.labelKey)}</span>
             <span className="shrink-0 font-medium text-ink">
-              Karte {row.card + 1}
+              {t("form.cardLabel", { n: row.card + 1 })}
             </span>
             <span className="shrink-0 text-xs tabular-nums text-ink-soft">
               {row.count}/{row.slotCount}
@@ -128,7 +131,9 @@ export function CardOverviewList({
             )}
             {row.completedAt && (
               <span className="shrink-0 text-xs text-ink-faint">
-                {format(row.completedAt, "d. MMM yyyy", { locale: de })}
+                {format(row.completedAt, "d. MMM yyyy", {
+                  locale: dateLocale(lang),
+                })}
               </span>
             )}
           </li>

@@ -16,6 +16,7 @@ import { getCardRewards } from "@/lib/goals/queries";
 import type { Goal, GoalCardReward } from "@/lib/goals/types";
 import { PunchCardGrid } from "@/components/punchcard/PunchCardGrid";
 import { Spinner } from "@/components/ui/Spinner";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 
@@ -27,6 +28,7 @@ const FALLBACK_COLOR = "#e07316"; // --accent (Light)
  */
 export function GoalCard({ goal }: { goal: Goal }) {
   const color = goal.color ?? FALLBACK_COLOR;
+  const { t } = useTranslation();
 
   return (
     <article className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] border border-hairline bg-surface p-5 shadow-card">
@@ -53,7 +55,7 @@ export function GoalCard({ goal }: { goal: Goal }) {
             {goal.title}
           </span>
           <span className="block text-xs text-ink-faint">
-            Details ansehen →
+            {t("dashboard.detailsLink")}
           </span>
         </span>
       </Link>
@@ -72,8 +74,6 @@ export function GoalCard({ goal }: { goal: Goal }) {
 const SWIPE_OFFSET_THRESHOLD = 60;
 /** Alternativ: Mindest-Geschwindigkeit (px/s) für kurze, schnelle Flicks. */
 const SWIPE_VELOCITY_THRESHOLD = 500;
-
-const VIEW_LABELS = ["Stempelkarte", "Statistik"] as const;
 
 export interface GoalCardSwipeProps {
   /** Panel A: die Stempelkarte (Black Box, unverändert übernommen). */
@@ -105,6 +105,8 @@ export function GoalCardSwipe({
   punchPanel,
   renderAnalytics,
 }: GoalCardSwipeProps) {
+  const { t } = useTranslation();
+  const viewLabels = [t("card.view.punchcard"), t("card.view.stats")] as const;
   const [view, setView] = useState<0 | 1>(0);
   const [analyticsMounted, setAnalyticsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -195,12 +197,12 @@ export function GoalCardSwipe({
       </motion.div>
 
       <div className="flex items-center justify-center gap-2">
-        {VIEW_LABELS.map((label, index) => (
+        {viewLabels.map((label, index) => (
           <button
             key={label}
             type="button"
             onClick={() => show(index as 0 | 1)}
-            aria-label={`${label} anzeigen`}
+            aria-label={t("card.view.show", { label })}
             aria-pressed={view === index}
             className="flex h-6 w-6 items-center justify-center rounded-full transition hover:bg-sunken"
           >
@@ -224,6 +226,7 @@ export function GoalCardSwipe({
  * (Panel A des Swipe-Containers — Innenleben unverändert aus Phase 2.)
  */
 function GoalCardPunchPanel({ goal }: { goal: Goal }) {
+  const { t } = useTranslation();
   const { stamps, loading, error, addStamp } = useGoalStamps(goal.id);
   const [rewards, setRewards] = useState<GoalCardReward[]>([]);
 
@@ -242,7 +245,7 @@ function GoalCardPunchPanel({ goal }: { goal: Goal }) {
   }, [goal.id]);
 
   if (loading) {
-    return <Spinner label="Stempel werden geladen …" />;
+    return <Spinner label={t("goal.stampsLoading")} />;
   }
 
   const stampCount = stamps.length;
@@ -264,10 +267,10 @@ function GoalCardPunchPanel({ goal }: { goal: Goal }) {
         <span className="font-display font-bold text-ink">
           {stampCount}/{goal.target_count}
         </span>{" "}
-        · Karte {activeCard + 1}/{cards}
+        {t("goal.cardCounter", { card: activeCard + 1, cards })}
         {remaining === 0 && (
           <span className="ml-2 inline-flex items-center gap-1 font-semibold text-accent-strong">
-            Ziel erreicht!
+            {t("goal.reachedShort")}
             <Confetti size={14} weight="fill" aria-hidden="true" />
           </span>
         )}

@@ -16,6 +16,8 @@ import type {
 } from "@/lib/goals/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, inputClassName } from "@/components/ui/Input";
+import { useTranslation, type TranslateFn } from "@/lib/i18n/LanguageProvider";
+import type { MessageKey } from "@/lib/i18n/messages";
 import {
   DEFAULT_GOAL_ICON,
   GOAL_ICON_CHOICES,
@@ -26,74 +28,74 @@ import { cn } from "@/lib/utils";
 
 // Kuratierte, pastellige Farbpalette („Ticket & Tinte“) — funktioniert auf
 // Creme (Light) UND warmem Fast-Schwarz (Dark). Bestandsziele mit alten
-// Hex-Werten rendern unverändert weiter (Hex-in-DB bleibt).
-const COLORS = [
-  { value: "#e8871e", label: "Mandarine" },
-  { value: "#e25d4f", label: "Koralle" },
-  { value: "#d96a9b", label: "Rosa" },
-  { value: "#9f7aea", label: "Flieder" },
-  { value: "#5a8dee", label: "Himmelblau" },
-  { value: "#2fb7b0", label: "Türkis" },
-  { value: "#6aa84f", label: "Grün" },
-  { value: "#a07855", label: "Mokka" },
-] as const;
+// Hex-Werten rendern unverändert weiter (Hex-in-DB bleibt). `labelKey`
+// verweist auf den i18n-Schlüssel (de/en).
+const COLORS: { value: string; labelKey: MessageKey }[] = [
+  { value: "#e8871e", labelKey: "color.mandarine" },
+  { value: "#e25d4f", labelKey: "color.coral" },
+  { value: "#d96a9b", labelKey: "color.rosa" },
+  { value: "#9f7aea", labelKey: "color.flieder" },
+  { value: "#5a8dee", labelKey: "color.himmelblau" },
+  { value: "#2fb7b0", labelKey: "color.tuerkis" },
+  { value: "#6aa84f", labelKey: "color.gruen" },
+  { value: "#a07855", labelKey: "color.mokka" },
+];
 
 // Obergrenze für individuell konfigurierbare Karten-Belohnungen im Formular
 const MAX_REWARD_INPUTS = 50;
 
-const goalFormSchema = z
-  .object({
-    title: z
-      .string()
-      .trim()
-      .min(1, "Bitte gib einen Titel ein.")
-      .max(200, "Der Titel darf höchstens 200 Zeichen lang sein."),
-    description: z
-      .string()
-      .max(2000, "Die Beschreibung ist zu lang (max. 2000 Zeichen).")
-      .optional(),
-    icon: z.string().min(1, "Bitte wähle ein Symbol."),
-    color: z.string().min(1, "Bitte wähle eine Farbe."),
-    target_count: z
-      .number({ error: "Bitte gib eine Zahl ein." })
-      .int("Bitte gib eine ganze Zahl ein.")
-      .min(1, "Die Zielanzahl muss mindestens 1 sein.")
-      .max(100000, "Die Zielanzahl ist zu groß."),
-    card_size: z
-      .number({ error: "Bitte gib eine Zahl ein." })
-      .int("Bitte gib eine ganze Zahl ein.")
-      .min(1, "Die Kartengröße muss mindestens 1 sein.")
-      .max(100, "Maximal 100 Felder pro Karte."),
-    period_type: z.enum(["year", "month", "week", "custom"]),
-    start_date: z.string().min(1, "Bitte wähle ein Startdatum."),
-    end_date: z.string().optional(),
-    reward_text: z.string().max(500, "Die Belohnung ist zu lang.").optional(),
-    use_card_rewards: z.boolean(),
-    card_rewards: z.array(z.string().max(500)).optional(),
-  })
-  .superRefine((values, ctx) => {
-    if (values.period_type === "custom") {
-      if (!values.end_date) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["end_date"],
-          message: "Bei eigenem Zeitraum ist ein Enddatum erforderlich.",
-        });
-      } else if (values.end_date < values.start_date) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["end_date"],
-          message: "Das Enddatum darf nicht vor dem Startdatum liegen.",
-        });
+/** Zod-Schema mit übersetzten Fehlermeldungen (an die aktive Sprache gebunden). */
+function makeGoalFormSchema(t: TranslateFn) {
+  return z
+    .object({
+      title: z
+        .string()
+        .trim()
+        .min(1, t("form.err.titleRequired"))
+        .max(200, t("form.err.titleMax")),
+      description: z
+        .string()
+        .max(2000, t("form.err.descriptionMax"))
+        .optional(),
+      icon: z.string().min(1, t("form.err.iconRequired")),
+      color: z.string().min(1, t("form.err.colorRequired")),
+      target_count: z
+        .number({ error: t("form.err.number") })
+        .int(t("form.err.integer"))
+        .min(1, t("form.err.targetMin"))
+        .max(100000, t("form.err.targetMax")),
+      card_size: z
+        .number({ error: t("form.err.number") })
+        .int(t("form.err.integer"))
+        .min(1, t("form.err.cardSizeMin"))
+        .max(100, t("form.err.cardSizeMax")),
+      period_type: z.enum(["year", "month", "week", "custom"]),
+      start_date: z.string().min(1, t("form.err.startRequired")),
+      end_date: z.string().optional(),
+      reward_text: z.string().max(500, t("form.err.rewardMax")).optional(),
+      use_card_rewards: z.boolean(),
+      card_rewards: z.array(z.string().max(500)).optional(),
+    })
+    .superRefine((values, ctx) => {
+      if (values.period_type === "custom") {
+        if (!values.end_date) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["end_date"],
+            message: t("form.err.endRequired"),
+          });
+        } else if (values.end_date < values.start_date) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["end_date"],
+            message: t("form.err.endBeforeStart"),
+          });
+        }
       }
-    }
-  });
-
-type GoalFormValues = z.infer<typeof goalFormSchema>;
-
-function felderWort(n: number): string {
-  return n === 1 ? "Feld" : "Feldern";
+    });
 }
+
+type GoalFormValues = z.infer<ReturnType<typeof makeGoalFormSchema>>;
 
 function buildCardRewardDefaults(
   goal: Goal | undefined,
@@ -125,7 +127,10 @@ export interface GoalFormProps {
 export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const goalFormSchema = useMemo(() => makeGoalFormSchema(t), [t]);
 
   const defaultValues: GoalFormValues = goal
     ? {
@@ -185,9 +190,15 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
     !GOAL_ICON_CHOICES.some((c) => c.name === defaultValues.icon)
       ? defaultValues.icon
       : null;
-  const iconChoices = legacyIcon
-    ? [{ name: legacyIcon, label: `Bisheriges Symbol ${legacyIcon}` }, ...GOAL_ICON_CHOICES]
-    : GOAL_ICON_CHOICES;
+  const iconChoices: { name: string; label: string }[] = legacyIcon
+    ? [
+        { name: legacyIcon, label: t("form.legacyIcon", { icon: legacyIcon }) },
+        ...GOAL_ICON_CHOICES.map((c) => ({
+          name: c.name,
+          label: t(c.labelKey),
+        })),
+      ]
+    : GOAL_ICON_CHOICES.map((c) => ({ name: c.name, label: t(c.labelKey) }));
 
   // Live-Preview der Kartenaufteilung ("→ 10 Karten à 10 Felder, …")
   const preview = useMemo(() => {
@@ -195,13 +206,13 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
     if (cards === 0) return null;
     const lastSlots = slotsForCard(cards - 1, targetCount, cardSize);
     if (cards === 1) {
-      return `→ 1 Karte mit ${lastSlots} ${felderWort(lastSlots)}`;
+      return t("form.previewOne", { slots: lastSlots });
     }
-    const base = `→ ${cards} Karten à ${cardSize} ${felderWort(cardSize)}`;
+    const base = t("form.previewMany", { cards, size: cardSize });
     return lastSlots === cardSize
       ? base
-      : `${base}, letzte Karte mit ${lastSlots} ${felderWort(lastSlots)}`;
-  }, [targetCount, cardSize]);
+      : t("form.previewLastCard", { base, last: lastSlots });
+  }, [targetCount, cardSize, t]);
 
   const rewardInputCount = Math.min(
     totalCards(targetCount, cardSize),
@@ -211,7 +222,7 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
   async function onSubmit(values: GoalFormValues) {
     setSubmitError(null);
     if (!user) {
-      setSubmitError("Du bist nicht angemeldet.");
+      setSubmitError(t("common.notLoggedIn"));
       return;
     }
 
@@ -249,7 +260,7 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
       }
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Speichern fehlgeschlagen.",
+        err instanceof Error ? err.message : t("form.saveFailed"),
       );
     }
   }
@@ -261,22 +272,22 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
       noValidate
     >
       <Input
-        label="Titel"
-        placeholder="z.B. 100x Sport"
+        label={t("form.title")}
+        placeholder={t("form.titlePlaceholder")}
         error={errors.title?.message}
         {...register("title")}
       />
 
       <Textarea
-        label="Beschreibung (optional)"
-        placeholder="Worum geht es bei diesem Ziel?"
+        label={t("form.description")}
+        placeholder={t("form.descriptionPlaceholder")}
         error={errors.description?.message}
         {...register("description")}
       />
 
       {/* Symbol: kuratierte Phosphor-Icons als gestempelte Piktogramme */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-ink-soft">Symbol</span>
+        <span className="text-sm font-medium text-ink-soft">{t("form.icon")}</span>
         <div className="grid grid-cols-10 gap-1.5 max-sm:grid-cols-5">
           {iconChoices.map((choice) => {
             const selected = icon === choice.name;
@@ -288,7 +299,7 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
                   setValue("icon", choice.name, { shouldValidate: true })
                 }
                 aria-pressed={selected}
-                aria-label={`Symbol ${choice.label}`}
+                aria-label={t("form.iconLabel", { label: choice.label })}
                 title={choice.label}
                 className={cn(
                   "flex aspect-square items-center justify-center rounded-full border transition hover:scale-105",
@@ -311,9 +322,11 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
 
       {/* Farbe */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-ink-soft">Farbe</span>
+        <span className="text-sm font-medium text-ink-soft">{t("form.color")}</span>
         <div className="flex flex-wrap gap-2">
-          {COLORS.map((c) => (
+          {COLORS.map((c) => {
+            const label = t(c.labelKey);
+            return (
             <button
               key={c.value}
               type="button"
@@ -321,8 +334,8 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
                 setValue("color", c.value, { shouldValidate: true })
               }
               aria-pressed={color === c.value}
-              aria-label={`Farbe ${c.label}`}
-              title={c.label}
+              aria-label={t("form.colorLabel", { label })}
+              title={label}
               className={cn(
                 "h-9 w-9 rounded-full border-2 transition hover:scale-110",
                 color === c.value
@@ -331,7 +344,8 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
               )}
               style={{ backgroundColor: c.value }}
             />
-          ))}
+            );
+          })}
         </div>
         {errors.color && (
           <p className="text-xs text-danger" role="alert">
@@ -345,7 +359,7 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
             type="number"
-            label="Zielanzahl"
+            label={t("form.targetCount")}
             min={1}
             inputMode="numeric"
             error={errors.target_count?.message}
@@ -353,7 +367,7 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
           />
           <Input
             type="number"
-            label="Felder pro Karte"
+            label={t("form.cardSize")}
             min={1}
             max={100}
             inputMode="numeric"
@@ -387,8 +401,8 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
       {/* Belohnung */}
       <div className="flex flex-col gap-3">
         <Input
-          label="Belohnung pro Karte (optional)"
-          placeholder="z.B. Ein Kinoabend"
+          label={t("form.reward")}
+          placeholder={t("form.rewardPlaceholder")}
           error={errors.reward_text?.message}
           {...register("reward_text")}
         />
@@ -399,7 +413,7 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
             className="h-4 w-4 accent-[var(--accent)]"
             {...register("use_card_rewards")}
           />
-          Unterschiedliche Belohnung pro Karte
+          {t("form.useCardRewards")}
         </label>
 
         {useCardRewards && (
@@ -407,12 +421,14 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
             {Array.from({ length: rewardInputCount }, (_, cardIndex) => (
               <div key={cardIndex} className="flex items-center gap-3">
                 <span className="w-16 shrink-0 text-xs font-semibold text-ink-soft">
-                  Karte {cardIndex + 1}
+                  {t("form.cardLabel", { n: cardIndex + 1 })}
                 </span>
                 <input
                   type="text"
-                  placeholder={rewardText.trim() || "Belohnung (optional)"}
-                  aria-label={`Belohnung für Karte ${cardIndex + 1}`}
+                  placeholder={
+                    rewardText.trim() || t("form.rewardInputPlaceholder")
+                  }
+                  aria-label={t("form.rewardForCard", { n: cardIndex + 1 })}
                   className={cn(inputClassName, "w-full py-2 text-sm")}
                   {...register(`card_rewards.${cardIndex}` as const)}
                 />
@@ -420,12 +436,11 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
             ))}
             {totalCards(targetCount, cardSize) > MAX_REWARD_INPUTS && (
               <p className="text-xs text-ink-soft">
-                Es können höchstens {MAX_REWARD_INPUTS} Karten individuell
-                belohnt werden — für die übrigen gilt die Standard-Belohnung.
+                {t("form.maxRewardsHint", { max: MAX_REWARD_INPUTS })}
               </p>
             )}
             <p className="text-xs text-ink-soft">
-              Leere Felder verwenden die Standard-Belohnung oben.
+              {t("form.emptyRewardHint")}
             </p>
           </div>
         )}
@@ -446,14 +461,14 @@ export function GoalForm({ goal, cardRewards = [] }: GoalFormProps) {
           onClick={() => router.back()}
           disabled={isSubmitting}
         >
-          Abbrechen
+          {t("common.cancel")}
         </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting
-            ? "Wird gespeichert …"
+            ? t("common.saving")
             : goal
-              ? "Änderungen speichern"
-              : "Ziel anlegen"}
+              ? t("form.submitUpdate")
+              : t("form.submitCreate")}
         </Button>
       </div>
     </form>

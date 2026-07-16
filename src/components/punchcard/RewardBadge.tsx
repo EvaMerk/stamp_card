@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { Confetti, Gift } from "@phosphor-icons/react";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 /**
  * Verzögerung des Badge-Einflugs in Sekunden — abgestimmt auf die
@@ -52,6 +53,7 @@ export function RewardBadge({
   rewardText,
   onDismiss,
 }: RewardBadgeProps) {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
 
   return (
@@ -119,9 +121,9 @@ export function RewardBadge({
           <p className="flex items-center gap-1.5 font-semibold text-accent-strong">
             <Confetti size={16} weight="fill" aria-hidden="true" />
             <span>
-              Karte voll!{" "}
+              {t("reward.cardFull")}{" "}
               <span className="font-normal text-ink">
-                Karte {cardNumber} ist komplett — stark!
+                {t("reward.cardComplete", { n: cardNumber })}
               </span>
             </span>
           </p>
@@ -129,7 +131,8 @@ export function RewardBadge({
             <p className="mt-0.5 flex items-center gap-1.5 text-ink-soft">
               <Gift size={14} weight="fill" aria-hidden="true" />
               <span>
-                Deine Belohnung: <strong className="text-ink">{rewardText}</strong>
+                {t("reward.yourReward")}{" "}
+                <strong className="text-ink">{rewardText}</strong>
               </span>
             </p>
           )}
@@ -138,7 +141,7 @@ export function RewardBadge({
           type="button"
           onClick={onDismiss}
           className="shrink-0 cursor-pointer rounded-lg px-2 py-0.5 text-base leading-none text-accent-strong transition hover:bg-accent/15"
-          aria-label="Hinweis schließen"
+          aria-label={t("reward.dismiss")}
         >
           ×
         </button>

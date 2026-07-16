@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 import { StampAnimation } from "./StampAnimation";
 
 export type PunchSlotState = "filled" | "active" | "locked";
@@ -47,6 +48,7 @@ export function PunchSlot({
   onStamp,
   disabled = false,
 }: PunchSlotProps) {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   // Läuft gerade eine Stempel-Animation auf diesem Feld?
   const [animating, setAnimating] = useState(false);
@@ -103,14 +105,14 @@ export function PunchSlot({
             !disabled && !animating && "animate-pulse",
           )}
           style={{ borderColor: color, color }}
-          aria-label={`Feld ${slotNumber} stempeln`}
+          aria-label={t("punch.stamp", { n: slotNumber })}
         >
           {slotNumber}
         </button>
       ) : (
         <span
           className="flex aspect-square w-full items-center justify-center rounded-full bg-sunken text-sm font-medium text-ink-faint"
-          aria-label={`Feld ${slotNumber}: noch gesperrt`}
+          aria-label={t("punch.locked", { n: slotNumber })}
         >
           {slotNumber}
         </span>
@@ -127,7 +129,7 @@ export function PunchSlot({
             className="stamp-ink absolute inset-0 flex items-center justify-center rounded-full"
             style={{ ["--stamp-color" as string]: color }}
             role="img"
-            aria-label={`Feld ${slotNumber}: gestempelt`}
+            aria-label={t("punch.stamped", { n: slotNumber })}
             initial={{ opacity: 1, scale: 1, rotate: inkRotation }}
             animate={{ opacity: 1, scale: 1, rotate: inkRotation }}
             exit={

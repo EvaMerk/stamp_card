@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { GoalForm } from "@/components/goals/GoalForm";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 export default function NewGoalPage() {
+  const { t } = useTranslation();
   return (
     <AuthGuard>
       <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 py-8">
@@ -13,13 +15,13 @@ export default function NewGoalPage() {
             href="/dashboard"
             className="text-sm font-medium text-amber-600 hover:text-amber-700"
           >
-            ← Zurück zum Dashboard
+            {t("goal.backToDashboard")}
           </Link>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-stone-800">
-            Neues Ziel anlegen
+            {t("goal.new.title")}
           </h1>
           <p className="mt-1 text-sm text-stone-500">
-            Definiere dein Ziel und deine Stempelkarten — los geht’s!
+            {t("goal.new.subtitle")}
           </p>
         </header>
 

@@ -16,9 +16,10 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { de } from "date-fns/locale";
 import { slotsForCard, totalCards } from "@/lib/goals/punchcard-math";
 import type { Goal, Stamp } from "@/lib/goals/types";
+import type { Lang } from "@/lib/i18n/constants";
+import { dateLocale } from "@/lib/i18n/date-locale";
 
 const DAY_MS = 86_400_000;
 const WEEK_MS = 7 * DAY_MS;
@@ -44,7 +45,10 @@ export interface FrequencySeries {
   y: number[];
   /** Balkenbreite in Millisekunden, pro Bucket (Monate sind unterschiedlich lang). */
   widths: number[];
-  /** Deutsche Hover-Labels ("KW 27 · ab 29. Juni" bzw. "Juli 2026"). */
+  /**
+   * Lokalisierte Hover-Labels: Woche = "KW 27 · ab 29. Juni" / "Week 27 · from
+   * Jun 29", Monat = "Juli 2026" / "July 2026" (Sprache über `lang`).
+   */
   labels: string[];
 }
 
@@ -97,7 +101,13 @@ export function cardBoundaryValues(target: number, size: number): number[] {
  * Stempel-Frequenz als lückenlose Zeit-Buckets: wöchentlich (Montag-Start),
  * solange die Datenspanne ≤ ~3 Monate ist, sonst monatlich.
  */
-export function frequencySeries(stamps: readonly Stamp[]): FrequencySeries {
+export function frequencySeries(
+  stamps: readonly Stamp[],
+  lang: Lang = "de",
+): FrequencySeries {
+  const locale = dateLocale(lang);
+  const weekPrefix = lang === "de" ? "KW" : "Week";
+  const from = lang === "de" ? "ab" : "from";
   const dates = toSortedDates(stamps);
   if (dates.length === 0) {
     return { unit: "week", x: [], y: [], widths: [], labels: [] };
@@ -123,7 +133,10 @@ export function frequencySeries(stamps: readonly Stamp[]): FrequencySeries {
       y: starts.map((s) => counts.get(s.getTime()) ?? 0),
       widths: starts.map(() => WEEK_MS * BAR_WIDTH_RATIO),
       labels: starts.map(
-        (s) => `KW ${format(s, "I")} · ab ${format(s, "d. MMM", { locale: de })}`,
+        (s) =>
+          `${weekPrefix} ${format(s, "I")} · ${from} ${format(s, "d. MMM", {
+            locale,
+          })}`,
       ),
     };
   }
@@ -144,7 +157,7 @@ export function frequencySeries(stamps: readonly Stamp[]): FrequencySeries {
     widths: starts.map(
       (s) => (endOfMonth(s).getTime() - s.getTime()) * BAR_WIDTH_RATIO,
     ),
-    labels: starts.map((s) => format(s, "LLLL yyyy", { locale: de })),
+    labels: starts.map((s) => format(s, "LLLL yyyy", { locale })),
   };
 }
 
@@ -152,11 +165,12 @@ export function frequencySeries(stamps: readonly Stamp[]): FrequencySeries {
 export function buildStampChartData(
   goal: Pick<Goal, "target_count" | "card_size">,
   stamps: readonly Stamp[],
+  lang: Lang = "de",
 ): StampChartData {
   return {
     cumulative: cumulativeSeries(stamps),
     target: goal.target_count,
     cardBoundaries: cardBoundaryValues(goal.target_count, goal.card_size),
-    frequency: frequencySeries(stamps),
+    frequency: frequencySeries(stamps, lang),
   };
 }

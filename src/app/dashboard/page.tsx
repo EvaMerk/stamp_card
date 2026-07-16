@@ -12,18 +12,22 @@ import { OverviewPanel } from "@/components/overview/OverviewPanel";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoals } from "@/hooks/useGoals";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
-const TABS = [
-  { key: "ziele", label: "Ziele" },
-  { key: "uebersicht", label: "Übersicht" },
-] as const;
+const TAB_KEYS = ["ziele", "uebersicht"] as const;
 
-type TabKey = (typeof TABS)[number]["key"];
+type TabKey = (typeof TAB_KEYS)[number];
 
 function DashboardContent() {
   const { user } = useAuth();
   const { goals, loading, error } = useGoals();
+  const { t } = useTranslation();
+
+  const tabLabels: Record<TabKey, string> = {
+    ziele: t("dashboard.tabs.goals"),
+    uebersicht: t("dashboard.tabs.overview"),
+  };
 
   // Tab-Zustand lebt client-seitig; ?tab= hält ihn über Reloads hinweg.
   // useSearchParams nur für den Initialwert — Updates laufen über
@@ -66,7 +70,7 @@ function DashboardContent() {
           </span>
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
-              Meine Ziele
+              {t("dashboard.title")}
             </h1>
             {user?.email && (
               <p className="text-xs text-ink-faint">{user.email}</p>
@@ -76,7 +80,7 @@ function DashboardContent() {
         <div className="flex items-center gap-2">
           <Link
             href="/einstellungen"
-            aria-label="Einstellungen"
+            aria-label={t("dashboard.settings")}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface text-ink-soft shadow-sm transition hover:border-accent/50 hover:text-accent-strong active:scale-[0.98]"
           >
             <GearSix size={20} weight="bold" />
@@ -88,9 +92,9 @@ function DashboardContent() {
       <div
         className="relative mx-auto mb-8 grid w-full max-w-sm grid-cols-2 gap-1 rounded-full bg-sunken p-1"
         role="tablist"
-        aria-label="Dashboard-Ansicht"
+        aria-label={t("dashboard.viewLabel")}
       >
-        {TABS.map(({ key, label }) => {
+        {TAB_KEYS.map((key) => {
           const selected = tab === key;
           return (
             <button
@@ -108,7 +112,7 @@ function DashboardContent() {
                   : "text-ink-soft hover:text-ink",
               )}
             >
-              {label}
+              {tabLabels[key]}
             </button>
           );
         })}
@@ -123,7 +127,7 @@ function DashboardContent() {
         >
           {loading ? (
             <div className="flex flex-1 items-center justify-center">
-              <Spinner label="Ziele werden geladen …" />
+              <Spinner label={t("dashboard.goalsLoading")} />
             </div>
           ) : error ? (
             <p

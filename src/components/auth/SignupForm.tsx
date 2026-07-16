@@ -6,8 +6,10 @@ import { Mailbox } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { inputClassName } from "@/components/ui/Input";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 export function SignupForm() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export function SignupForm() {
     setError(null);
 
     if (password.length < 8) {
-      setError("Das Passwort muss mindestens 8 Zeichen lang sein.");
+      setError(t("auth.passwordTooShort"));
       return;
     }
 
@@ -34,12 +36,12 @@ export function SignupForm() {
         },
       });
       if (signUpError) {
-        setError(authErrorMessage(signUpError, "Registrierung fehlgeschlagen."));
+        setError(authErrorMessage(t, signUpError, t("auth.signup.failed")));
         return;
       }
       setEmailSent(true);
     } catch (err) {
-      setError(authErrorMessage(err, "Registrierung fehlgeschlagen."));
+      setError(authErrorMessage(t, err, t("auth.signup.failed")));
     } finally {
       setSubmitting(false);
     }
@@ -52,29 +54,30 @@ export function SignupForm() {
           <Mailbox size={28} weight="fill" aria-hidden="true" />
         </span>
         <h2 className="font-display text-xl font-semibold text-ink">
-          Fast geschafft!
+          {t("auth.signup.sentHeading")}
         </h2>
         <p className="text-sm leading-6 text-ink-soft">
-          Wir haben dir eine E-Mail an{" "}
-          <span className="font-medium text-ink">{email}</span> geschickt.
-          Bitte bestätige deine Adresse über den Link in der E-Mail, um dein
-          Konto zu aktivieren.
+          {t("auth.signup.sentBody", { email })}
         </p>
         <Link
           href="/login"
           className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98]"
         >
-          Zur Anmeldung
+          {t("auth.signup.toLogin")}
         </Link>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <>
+      <h2 className="mb-6 text-center font-display text-2xl font-semibold tracking-tight text-ink">
+        {t("auth.signup.heading")}
+      </h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-ink-soft">
-          E-Mail
+          {t("auth.email")}
         </label>
         <input
           id="email"
@@ -83,7 +86,7 @@ export function SignupForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="du@beispiel.de"
+          placeholder={t("auth.emailPlaceholder")}
           className={inputClassName}
         />
       </div>
@@ -93,7 +96,7 @@ export function SignupForm() {
           htmlFor="password"
           className="text-sm font-medium text-ink-soft"
         >
-          Passwort
+          {t("auth.password")}
         </label>
         <input
           id="password"
@@ -103,7 +106,7 @@ export function SignupForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Mindestens 8 Zeichen"
+          placeholder={t("auth.signup.passwordPlaceholder")}
           className={inputClassName}
         />
       </div>
@@ -122,18 +125,19 @@ export function SignupForm() {
         disabled={submitting}
         className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? "Wird registriert …" : "Registrieren"}
+        {submitting ? t("auth.signup.submitting") : t("auth.signup.submit")}
       </button>
 
       <p className="text-center text-sm text-ink-soft">
-        Schon ein Konto?{" "}
+        {t("auth.signup.hasAccount")}{" "}
         <Link
           href="/login"
           className="font-medium text-accent-strong hover:underline"
         >
-          Anmelden
+          {t("auth.signup.loginLink")}
         </Link>
       </p>
     </form>
+    </>
   );
 }

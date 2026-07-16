@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { Plus } from "@phosphor-icons/react";
 import type { Goal } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 import { GoalCard } from "./GoalCard";
 
 /**
  * Responsives Grid aller Ziel-Kacheln + "+ Neues Ziel"-Kachel.
  */
 export function GoalList({ goals }: { goals: Goal[] }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {goals.map((goal) => (
@@ -25,7 +27,7 @@ export function GoalList({ goals }: { goals: Goal[] }) {
         >
           <Plus size={22} weight="bold" />
         </span>
-        <span className="text-sm font-semibold">Neues Ziel</span>
+        <span className="text-sm font-semibold">{t("dashboard.newGoal")}</span>
       </Link>
     </div>
   );

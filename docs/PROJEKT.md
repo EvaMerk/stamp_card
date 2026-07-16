@@ -62,10 +62,22 @@ brechen den statischen Export.** Jede Änderung muss beide Builds bestehen
 6. **Stamps sind append-only.** Kein UPDATE/DELETE auf `stamps` (weder Code
    noch RLS-Policy vorhanden). „Stempel zurücknehmen" wäre ein bewusstes
    Feature mit neuer, eng begrenzter Delete-Policy.
-7. **UI-Sprache ist Deutsch**, Design: warmes Amber/Creme, runde Karten,
-   verspielt. Fehlermeldungen von Supabase-Auth über
-   `src/lib/supabase/auth-errors.ts` übersetzen (dort ergänzen, nie roh
-   anzeigen).
+7. **UI ist zweisprachig (Deutsch/Englisch)**, Design: warmes Amber/Creme,
+   runde Karten, verspielt. Sprachsystem gespiegelt vom Theme/Akzent-System:
+   Standard = Gerätesprache (`navigator.language` „de*" → Deutsch, sonst
+   Englisch), pro Gerät in `localStorage` (`stempelkarte-lang`) — kein
+   Supabase-/DB-Zustand, umschaltbar schon vor dem Login (Umschalter im
+   `(auth)/layout.tsx` und in den Einstellungen). Der blockierende Inline-Head-
+   Script in `layout.tsx` löst die Sprache vor dem ersten Paint auf und setzt
+   `<html lang>` (kein Flash). Kern: `src/lib/i18n/` (`constants.ts`,
+   `messages.ts` mit typisierten `de`+`en`-Dicts inkl. Interpolation/Plural,
+   `LanguageProvider.tsx` → `useTranslation()`/`useI18n()`, `date-locale.ts`).
+   **Alle sichtbaren Strings über `t()`** — neue Texte IMMER in beide
+   Wörterbücher, nie hartkodieren. Datums-/Chart-Beschriftungen folgen der
+   Sprache (date-fns `de`/`enUS`, Plotly-Texte via `t`/`lang`). Marke
+   „Stempelkarte" bleibt unübersetzt; Nutzerinhalte (Ziel-Titel,
+   Belohnungstexte) werden NICHT übersetzt. Supabase-Auth-Fehler über
+   `src/lib/supabase/auth-errors.ts` (liefert i18n-Schlüssel; `t` übergeben).
 8. **Next.js 16**: Diese Version weicht von älterem Trainingswissen ab —
    vor API-Nutzung die Doku in `node_modules/next/dist/docs/` prüfen.
    Bekannt: `middleware.ts` ist als `proxy.ts` deprecated (funktioniert noch).
@@ -84,7 +96,8 @@ brechen den statischen Export.** Jede Änderung muss beide Builds bestehen
 | Animation/Gesten | `motion` v12 (`import ... from "motion/react"`) |
 | Charts | `react-plotly.js` + `plotly.js-basic-dist-min` (Factory-Pattern) |
 | Formulare | `react-hook-form` + `zod` v4 (`@hookform/resolvers`) |
-| Datum | `date-fns` v4 mit `date-fns/locale/de` |
+| Datum | `date-fns` v4, Locale je UI-Sprache (`de`/`enUS`, via `src/lib/i18n/date-locale.ts`) |
+| i18n | eigenes leichtgewichtiges System (`src/lib/i18n/`, de/en, localStorage, keine Lib) |
 | Utilities | `clsx` + `tailwind-merge` (via `cn()` in `src/lib/utils.ts`) |
 
 Alle Abhängigkeiten sind bereits installiert — für die geplanten nächsten

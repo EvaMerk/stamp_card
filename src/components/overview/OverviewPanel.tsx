@@ -24,6 +24,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { buildOverviewData } from "@/lib/analytics/overview-data";
 import { getAllStampsForUser, getGoals } from "@/lib/goals/queries";
 import type { Goal, Stamp } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
+import { ChartLoading } from "@/components/analytics/ChartLoading";
 import { ActivityFeed } from "./ActivityFeed";
 
 const FALLBACK_COLOR = "#e07316"; // --accent (Light)
@@ -32,14 +34,7 @@ const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 // nie im Server-Bundle, nie im initialen Routen-Chunk (Export-kompatibel).
 const OverviewChart = dynamic(() => import("./OverviewChart"), {
   ssr: false,
-  loading: () => (
-    <div
-      className="flex h-72 items-center justify-center rounded-[20px] bg-sunken text-xs text-ink-faint"
-      aria-hidden="true"
-    >
-      Diagramm wird geladen …
-    </div>
-  ),
+  loading: () => <ChartLoading heightClass="h-72" />,
 });
 
 interface OverviewState {
@@ -57,6 +52,7 @@ export interface OverviewPanelProps {
 
 export function OverviewPanel({ active = true }: OverviewPanelProps) {
   const { user, loading: authLoading } = useAuth();
+  const { t, lang } = useTranslation();
   const [state, setState] = useState<OverviewState>({
     goals: [],
     stamps: [],
@@ -78,13 +74,11 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
         goals: [],
         stamps: [],
         error:
-          err instanceof Error
-            ? err.message
-            : "Die Übersicht konnte nicht geladen werden.",
+          err instanceof Error ? err.message : t("overview.loadFailed"),
         loadedFor: user.id,
       });
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -99,12 +93,19 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
   const { goals, stamps, error } = state;
   const loading = authLoading || (!!user && state.loadedFor !== user.id);
 
-  const data = useMemo(() => buildOverviewData(goals, stamps), [goals, stamps]);
+  const data = useMemo(
+    () =>
+      buildOverviewData(goals, stamps, lang, {
+        today: t("activity.today"),
+        yesterday: t("activity.yesterday"),
+      }),
+    [goals, stamps, lang, t],
+  );
 
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <Spinner label="Übersicht wird geladen …" />
+        <Spinner label={t("overview.loading")} />
       </div>
     );
   }
@@ -134,17 +135,16 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
           <ChartLineUp size={40} weight="bold" />
         </span>
         <h2 className="relative font-display text-xl font-semibold tracking-tight text-ink">
-          Hier gibt es noch nichts zu sehen
+          {t("overview.emptyHeading")}
         </h2>
         <p className="relative max-w-sm text-sm leading-6 text-ink-soft">
-          Die Übersicht füllt sich, sobald du dein erstes Ziel anlegst und
-          Stempel sammelst.
+          {t("overview.emptyBody")}
         </p>
         <Link
           href="/goals/new"
           className="relative mt-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98]"
         >
-          Erstes Ziel anlegen
+          {t("empty.cta")}
         </Link>
       </div>
     );
@@ -160,21 +160,20 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
           <span className="font-display text-base font-bold text-ink">
             {totals.totalStamps}
           </span>{" "}
-          Stempel gesamt ·{" "}
+          {t("overview.statsStamps")} ·{" "}
           <span className="font-display text-base font-bold text-ink">
             {totals.totalCompletedCards}
           </span>{" "}
-          Karten voll ·{" "}
+          {t("overview.statsCards")} ·{" "}
           <span className="font-display text-base font-bold text-ink">
             {totals.goalCount}
           </span>{" "}
-          Ziele aktiv
+          {t("overview.statsGoals")}
         </p>
 
         {totals.totalStamps === 0 ? (
           <p className="relative rounded-[20px] border-2 border-dashed border-hairline bg-sunken/60 px-4 py-8 text-center text-sm leading-6 text-ink-soft">
-            Noch keine Stempel — sobald du stempelst, vergleichen sich hier
-            alle Ziele auf einen Blick.
+            {t("overview.chartEmpty")}
           </p>
         ) : (
           <OverviewChart
@@ -189,10 +188,10 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         <section
           className="flex flex-col gap-3 rounded-[20px] border border-hairline bg-surface p-5 shadow-card"
-          aria-label="Ziele im Überblick"
+          aria-label={t("overview.goalsHeading")}
         >
           <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
-            Ziele im Überblick
+            {t("overview.goalsHeading")}
           </h2>
           <ul className="flex flex-col gap-1.5">
             {goals.map((goal, index) => {
@@ -221,8 +220,12 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
                           {goal.title}
                         </span>
                         <span className="shrink-0 text-xs tabular-nums text-ink-soft">
-                          {summary.stampCount}/{goal.target_count} ·{" "}
-                          {summary.completedCards}/{summary.totalCards} Karten
+                          {t("overview.goalRow", {
+                            done: summary.stampCount,
+                            total: goal.target_count,
+                            completed: summary.completedCards,
+                            cards: summary.totalCards,
+                          })}
                         </span>
                       </span>
                       <span
@@ -231,7 +234,9 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
                         aria-valuenow={Math.round(summary.percent)}
                         aria-valuemin={0}
                         aria-valuemax={100}
-                        aria-label={`Fortschritt ${goal.title}`}
+                        aria-label={t("overview.progressOf", {
+                          title: goal.title,
+                        })}
                       >
                         <span
                           className="block h-full rounded-full transition-[width]"
@@ -251,10 +256,10 @@ export function OverviewPanel({ active = true }: OverviewPanelProps) {
 
         <section
           className="flex flex-col gap-3 rounded-[20px] border border-hairline bg-surface p-5 shadow-card"
-          aria-label="Letzte Aktivität"
+          aria-label={t("overview.activityHeading")}
         >
           <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
-            Letzte Aktivität
+            {t("overview.activityHeading")}
           </h2>
           <ActivityFeed activity={data.activity} goals={goals} />
         </section>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,7 +40,12 @@ export const metadata: Metadata = {
  *
  * Muss self-contained (kein Import/Modul) sein, damit er vor dem Bundle läuft;
  * statisch-export-kompatibel (reines DOM). Die String-Literale spiegeln
- * src/lib/theme/constants.ts + accents.ts — bei Änderung dort HIER anpassen.
+ * src/lib/theme/constants.ts + accents.ts sowie src/lib/i18n/constants.ts —
+ * bei Änderung dort HIER anpassen.
+ *
+ * Zusätzlich zur Theme-/Akzent-Auflösung wird die UI-Sprache aufgelöst
+ * (gespeicherte Wahl > Geräte-Sprache: navigator.language "de*" → de, sonst
+ * en) und als <html lang> gesetzt — verhindert einen Sprach-Flash.
  */
 const themeInitScript = `(function(){try{
 var m=localStorage.getItem("stempelkarte-theme");
@@ -51,6 +57,9 @@ var dark=m==="dark"||(m==="system"&&window.matchMedia&&window.matchMedia("(prefe
 var el=document.documentElement;
 el.dataset.theme=dark?"dark":"light";
 el.dataset.accent=a;
+var lg=localStorage.getItem("stempelkarte-lang");
+if(lg!=="de"&&lg!=="en"){lg=(navigator.language||"").toLowerCase().indexOf("de")===0?"de":"en";}
+el.lang=lg;
 }catch(e){
 document.documentElement.dataset.theme="light";
 document.documentElement.dataset.accent="amber";
@@ -74,9 +83,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="de"
-      // Der Inline-Script unten setzt data-theme/data-accent vor der Hydration
+      // Default-Sprache; der Inline-Script unten setzt lang (sowie
+      // data-theme/data-accent) vor der Hydration aus localStorage/Gerät
       // → erwartete Attribut-Abweichung am <html>; hier bewusst unterdrückt.
+      lang="de"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
     >
@@ -85,7 +95,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="flex min-h-full flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

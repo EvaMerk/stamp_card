@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/Spinner";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 /**
  * Einstiegsseite: leitet client-seitig weiter — eingeloggt → /dashboard,
@@ -12,6 +13,7 @@ import { Spinner } from "@/components/ui/Spinner";
  */
 export default function Home() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { session, loading } = useAuth();
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center">
-      <Spinner label="Einen Moment …" />
+      <Spinner label={t("home.redirecting")} />
     </div>
   );
 }

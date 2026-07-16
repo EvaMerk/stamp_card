@@ -14,7 +14,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, isValid, parseISO } from "date-fns";
-import { de } from "date-fns/locale";
 import { GoalAnalyticsView } from "@/components/analytics/GoalAnalytics";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { derivedEndDate } from "@/components/goals/PeriodPicker";
@@ -29,37 +28,44 @@ import {
   totalCards,
 } from "@/lib/goals/punchcard-math";
 import { deleteGoal, getCardRewards, getGoal } from "@/lib/goals/queries";
-import {
-  PERIOD_TYPE_LABELS,
-  type Goal,
-  type GoalCardReward,
-} from "@/lib/goals/types";
+import { type Goal, type GoalCardReward } from "@/lib/goals/types";
+import { useI18n, type TranslateFn } from "@/lib/i18n/LanguageProvider";
+import type { Lang } from "@/lib/i18n/constants";
+import { dateLocale } from "@/lib/i18n/date-locale";
+import { periodTypeLabel } from "@/lib/goals/period-labels";
 
 const FALLBACK_COLOR = "#f59e0b";
 
-function formatDay(iso: string): string {
+function formatDay(iso: string, lang: Lang): string {
   const date = parseISO(iso);
-  return isValid(date) ? format(date, "d. MMMM yyyy", { locale: de }) : iso;
+  return isValid(date)
+    ? format(date, "d. MMMM yyyy", { locale: dateLocale(lang) })
+    : iso;
 }
 
 /** "Jahr · 5. Juli 2026 – 4. Juli 2027" bzw. custom mit gespeichertem Ende. */
-function formatGoalPeriod(goal: Goal): string {
-  const label = PERIOD_TYPE_LABELS[goal.period_type];
-  const start = formatDay(goal.start_date);
+function formatGoalPeriod(goal: Goal, t: TranslateFn, lang: Lang): string {
+  const type = periodTypeLabel(t, goal.period_type);
+  const start = formatDay(goal.start_date, lang);
   const end =
     goal.period_type === "custom"
       ? goal.end_date
-        ? formatDay(goal.end_date)
+        ? formatDay(goal.end_date, lang)
         : null
       : (() => {
           const derived = derivedEndDate(goal.period_type, goal.start_date);
-          return derived ? format(derived, "d. MMMM yyyy", { locale: de }) : null;
+          return derived
+            ? format(derived, "d. MMMM yyyy", { locale: dateLocale(lang) })
+            : null;
         })();
-  return end ? `${label} · ${start} – ${end}` : `${label} · ab ${start}`;
+  return end
+    ? t("period.goalRange", { type, start, end })
+    : t("period.goalFrom", { type, start });
 }
 
 function GoalDetailContent() {
   const router = useRouter();
+  const { t, lang } = useI18n();
   const searchParams = useSearchParams();
   const goalId = searchParams.get("id") ?? undefined;
 
@@ -97,9 +103,7 @@ function GoalDetailContent() {
           goal: null,
           rewards: [],
           error:
-            err instanceof Error
-              ? err.message
-              : "Das Ziel konnte nicht geladen werden.",
+            err instanceof Error ? err.message : t("goal.loadFailed"),
           loadedFor: goalId,
         });
       });
@@ -120,16 +124,16 @@ function GoalDetailContent() {
       router.replace("/dashboard");
     } catch (err) {
       setDeleteError(
-        err instanceof Error ? err.message : "Löschen fehlgeschlagen.",
+        err instanceof Error ? err.message : t("goal.deleteFailed"),
       );
       setDeleting(false);
     }
-  }, [goalId, router]);
+  }, [goalId, router, t]);
 
   if (goalLoading || stampsLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <Spinner label="Ziel wird geladen …" />
+        <Spinner label={t("goal.loading")} />
       </div>
     );
   }
@@ -138,13 +142,13 @@ function GoalDetailContent() {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-lg font-semibold text-stone-700">
-          {loadError ?? "Dieses Ziel wurde nicht gefunden."}
+          {loadError ?? t("goal.notFound")}
         </p>
         <Link
           href="/dashboard"
           className="text-sm font-medium text-amber-600 hover:text-amber-700"
         >
-          ← Zurück zum Dashboard
+          {t("goal.backToDashboard")}
         </Link>
       </div>
     );
@@ -171,7 +175,7 @@ function GoalDetailContent() {
           href="/dashboard"
           className="text-sm font-medium text-amber-600 hover:text-amber-700"
         >
-          ← Zurück zum Dashboard
+          {t("goal.backToDashboard")}
         </Link>
 
         <div className="mt-4 flex items-start justify-between gap-4">
@@ -190,7 +194,9 @@ function GoalDetailContent() {
               <h1 className="truncate text-2xl font-bold tracking-tight text-stone-800">
                 {goal.title}
               </h1>
-              <p className="text-xs text-stone-500">{formatGoalPeriod(goal)}</p>
+              <p className="text-xs text-stone-500">
+                {formatGoalPeriod(goal, t, lang)}
+              </p>
             </div>
           </div>
 
@@ -199,14 +205,14 @@ function GoalDetailContent() {
               href={`/goal/edit?id=${goal.id}`}
               className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 shadow-sm transition hover:border-amber-300 hover:text-amber-700 active:scale-[0.98]"
             >
-              Bearbeiten
+              {t("goal.edit")}
             </Link>
             <Button
               variant="secondary"
               className="text-red-600 hover:border-red-300 hover:text-red-700"
               onClick={() => setDeleteOpen(true)}
             >
-              Löschen
+              {t("goal.delete")}
             </Button>
           </div>
         </div>
@@ -220,11 +226,16 @@ function GoalDetailContent() {
 
       <main className="flex flex-col gap-4 rounded-3xl border border-amber-100 bg-white p-6 shadow-xl shadow-amber-900/5">
         <p className="text-sm font-medium text-stone-500">
-          {stampCount}/{goal.target_count} Stempel · Karte {activeCard + 1}/
-          {cards} · noch {remaining} offen
+          {t("goal.detailProgress", {
+            done: stampCount,
+            total: goal.target_count,
+            card: activeCard + 1,
+            cards,
+            remaining,
+          })}
           {remaining === 0 && (
             <span className="ml-2 font-semibold text-amber-600">
-              Ziel erreicht! 🎉
+              {t("goal.reached")}
             </span>
           )}
         </p>
@@ -251,10 +262,10 @@ function GoalDetailContent() {
           oben erscheinen sofort auch in Chart und Kartenübersicht. */}
       <section
         className="mt-6 flex flex-col gap-4 rounded-3xl border border-amber-100 bg-white p-6 shadow-xl shadow-amber-900/5"
-        aria-label="Statistik"
+        aria-label={t("goal.stats")}
       >
         <h2 className="text-xs font-semibold uppercase tracking-wide text-stone-500">
-          Statistik
+          {t("goal.stats")}
         </h2>
         <GoalAnalyticsView
           goal={goal}
@@ -267,11 +278,10 @@ function GoalDetailContent() {
       <Modal
         open={deleteOpen}
         onClose={() => !deleting && setDeleteOpen(false)}
-        title="Ziel löschen?"
+        title={t("goal.deleteConfirmTitle")}
       >
         <p className="text-sm leading-6 text-stone-600">
-          Möchtest du <strong>{goal.title}</strong> wirklich löschen? Alle
-          gesammelten Stempel gehen dabei unwiderruflich verloren.
+          {t("goal.deleteConfirmBody", { title: goal.title })}
         </p>
         {deleteError && (
           <p
@@ -287,10 +297,10 @@ function GoalDetailContent() {
             onClick={() => setDeleteOpen(false)}
             disabled={deleting}
           >
-            Abbrechen
+            {t("common.cancel")}
           </Button>
           <Button variant="danger" onClick={handleDelete} disabled={deleting}>
-            {deleting ? "Wird gelöscht …" : "Endgültig löschen"}
+            {deleting ? t("goal.deleting") : t("goal.deleteConfirmCta")}
           </Button>
         </div>
       </Modal>

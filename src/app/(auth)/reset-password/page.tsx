@@ -9,6 +9,7 @@ import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/Spinner";
 import { inputClassName } from "@/components/ui/Input";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 /**
  * Zielseite des Recovery-Links aus der "Passwort vergessen"-E-Mail.
@@ -18,6 +19,7 @@ import { inputClassName } from "@/components/ui/Input";
  */
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { session, loading } = useAuth();
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -30,11 +32,11 @@ export default function ResetPasswordPage() {
     setError(null);
 
     if (password.length < 8) {
-      setError("Das Passwort muss mindestens 8 Zeichen lang sein.");
+      setError(t("auth.passwordTooShort"));
       return;
     }
     if (password !== passwordConfirm) {
-      setError("Die Passwörter stimmen nicht überein.");
+      setError(t("auth.reset.mismatch"));
       return;
     }
 
@@ -45,22 +47,20 @@ export default function ResetPasswordPage() {
         password,
       });
       if (updateError) {
-        setError(
-          authErrorMessage(updateError, "Passwort konnte nicht geändert werden."),
-        );
+        setError(authErrorMessage(t, updateError, t("auth.reset.failed")));
         return;
       }
       setDone(true);
       setTimeout(() => router.replace("/dashboard"), 2000);
     } catch (err) {
-      setError(authErrorMessage(err, "Passwort konnte nicht geändert werden."));
+      setError(authErrorMessage(t, err, t("auth.reset.failed")));
     } finally {
       setSubmitting(false);
     }
   }
 
   if (loading) {
-    return <Spinner label="Link wird geprüft …" />;
+    return <Spinner label={t("auth.reset.checking")} />;
   }
 
   if (!session) {
@@ -70,16 +70,16 @@ export default function ResetPasswordPage() {
           <Warning size={28} weight="fill" aria-hidden="true" />
         </span>
         <h2 className="font-display text-xl font-semibold text-ink">
-          Link ungültig oder abgelaufen
+          {t("auth.reset.invalidHeading")}
         </h2>
         <p className="text-sm leading-6 text-ink-soft">
-          Bitte fordere einen neuen Link zum Zurücksetzen deines Passworts an.
+          {t("auth.reset.invalidBody")}
         </p>
         <Link
           href="/forgot-password"
           className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98]"
         >
-          Neuen Link anfordern
+          {t("auth.reset.requestNew")}
         </Link>
       </div>
     );
@@ -92,10 +92,10 @@ export default function ResetPasswordPage() {
           <CheckCircle size={28} weight="fill" aria-hidden="true" />
         </span>
         <h2 className="font-display text-xl font-semibold text-ink">
-          Passwort geändert!
+          {t("auth.reset.doneHeading")}
         </h2>
         <p className="text-sm leading-6 text-ink-soft">
-          Du wirst gleich zu deinem Dashboard weitergeleitet …
+          {t("auth.reset.doneBody")}
         </p>
       </div>
     );
@@ -104,7 +104,7 @@ export default function ResetPasswordPage() {
   return (
     <>
       <h2 className="mb-6 text-center font-display text-2xl font-semibold tracking-tight text-ink">
-        Neues Passwort festlegen
+        {t("auth.reset.heading")}
       </h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
             htmlFor="password"
             className="text-sm font-medium text-ink-soft"
           >
-            Neues Passwort
+            {t("auth.reset.newPassword")}
           </label>
           <input
             id="password"
@@ -122,7 +122,7 @@ export default function ResetPasswordPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mindestens 8 Zeichen"
+            placeholder={t("auth.reset.newPasswordPlaceholder")}
             className={inputClassName}
           />
         </div>
@@ -132,7 +132,7 @@ export default function ResetPasswordPage() {
             htmlFor="passwordConfirm"
             className="text-sm font-medium text-ink-soft"
           >
-            Passwort wiederholen
+            {t("auth.reset.repeatPassword")}
           </label>
           <input
             id="passwordConfirm"
@@ -142,7 +142,7 @@ export default function ResetPasswordPage() {
             minLength={8}
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
-            placeholder="••••••••"
+            placeholder={t("auth.passwordPlaceholder")}
             className={inputClassName}
           />
         </div>
@@ -161,7 +161,7 @@ export default function ResetPasswordPage() {
           disabled={submitting}
           className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Wird gespeichert …" : "Passwort speichern"}
+          {submitting ? t("auth.reset.submitting") : t("auth.reset.submit")}
         </button>
       </form>
     </>

@@ -13,6 +13,7 @@ import { Confetti } from "@phosphor-icons/react";
 import { GoalIcon } from "@/components/goals/GoalIcon";
 import type { DayActivity } from "@/lib/analytics/overview-data";
 import type { Goal } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 /** So viele Tages-Gruppen sind ohne „Mehr anzeigen" sichtbar. */
 const COLLAPSED_DAY_COUNT = 7;
@@ -24,13 +25,14 @@ export interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ activity, goals }: ActivityFeedProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const goalsById = new Map(goals.map((goal) => [goal.id, goal]));
 
   if (activity.length === 0) {
     return (
       <p className="rounded-[20px] border-2 border-dashed border-hairline bg-sunken/60 px-4 py-8 text-center text-sm leading-6 text-ink-soft">
-        Noch keine Aktivität — dein erster Stempel taucht hier auf.
+        {t("activity.empty")}
       </p>
     );
   }
@@ -49,7 +51,7 @@ export function ActivityFeed({ activity, goals }: ActivityFeedProps) {
           <ul className="flex flex-col gap-1.5">
             {day.entries.map((entry) => {
               const goal = goalsById.get(entry.goalId);
-              const title = goal?.title ?? "Gelöschtes Ziel";
+              const title = goal?.title ?? t("activity.deletedGoal");
               return entry.type === "cardCompleted" ? (
                 <li
                   key={`${entry.goalId}-card-${entry.cardNumber}`}
@@ -62,7 +64,7 @@ export function ActivityFeed({ activity, goals }: ActivityFeedProps) {
                     className="shrink-0"
                   />
                   <span className="min-w-0 truncate">
-                    Karte {entry.cardNumber} von „{title}“ voll!
+                    {t("activity.cardFull", { n: entry.cardNumber, title })}
                   </span>
                 </li>
               ) : (
@@ -81,7 +83,7 @@ export function ActivityFeed({ activity, goals }: ActivityFeedProps) {
                     {title}
                   </span>
                   <span className="ml-auto shrink-0 text-xs tabular-nums text-ink-soft">
-                    {entry.count} Stempel
+                    {t("activity.stampsCount", { n: entry.count })}
                   </span>
                 </li>
               );
@@ -96,7 +98,7 @@ export function ActivityFeed({ activity, goals }: ActivityFeedProps) {
           onClick={() => setExpanded(true)}
           className="self-center rounded-full px-4 py-1.5 text-xs font-medium text-ink-soft transition hover:bg-sunken hover:text-accent-strong"
         >
-          Mehr anzeigen
+          {t("activity.showMore")}
         </button>
       )}
     </div>

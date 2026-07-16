@@ -27,6 +27,7 @@ import type { Config, Data, Layout } from "plotly.js";
 import { usePrefersDark } from "@/hooks/usePrefersDark";
 import { chartTheme } from "@/lib/analytics/chart-theme";
 import type { StampChartData } from "@/lib/analytics/chart-data";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 const Plot = createPlotlyComponent(Plotly);
 
@@ -45,6 +46,7 @@ export default function StampHistoryChart({
   color,
   height = 240,
 }: StampHistoryChartProps) {
+  const { t } = useTranslation();
   const theme = chartTheme(usePrefersDark());
   const { cumulative, target, cardBoundaries, frequency } = data;
   const maxY = Math.max(target, cumulative.y[cumulative.y.length - 1] ?? 0);
@@ -57,7 +59,9 @@ export default function StampHistoryChart({
       y: cumulative.y,
       line: { color, width: 2.5, shape: "hv" },
       marker: { color, size: 5 },
-      hovertemplate: "%{x|%d.%m.%Y}<br>%{y}. Stempel<extra></extra>",
+      hovertemplate: `%{x|%d.%m.%Y}<br>${t("chart.nthStamp", {
+        n: "%{y}",
+      })}<extra></extra>`,
     },
     {
       type: "bar",
@@ -67,7 +71,9 @@ export default function StampHistoryChart({
       yaxis: "y2",
       marker: { color: `${color}66` },
       hovertext: frequency.labels,
-      hovertemplate: "%{hovertext}<br>%{y} Stempel<extra></extra>",
+      hovertemplate: `%{hovertext}<br>${t("chart.stampsCount", {
+        n: "%{y}",
+      })}<extra></extra>`,
     },
   ];
 
@@ -135,7 +141,7 @@ export default function StampHistoryChart({
         yref: "y",
         y: target,
         yanchor: "bottom",
-        text: "Ziel",
+        text: t("chart.target"),
         showarrow: false,
         font: { size: 10, color: theme.target },
       },

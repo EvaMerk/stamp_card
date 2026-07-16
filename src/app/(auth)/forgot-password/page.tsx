@@ -6,8 +6,10 @@ import { PaperPlaneTilt } from "@phosphor-icons/react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { inputClassName } from "@/components/ui/Input";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -26,14 +28,12 @@ export default function ForgotPasswordPage() {
         },
       );
       if (resetError) {
-        setError(
-          authErrorMessage(resetError, "E-Mail konnte nicht gesendet werden."),
-        );
+        setError(authErrorMessage(t, resetError, t("auth.forgot.failed")));
         return;
       }
       setEmailSent(true);
     } catch (err) {
-      setError(authErrorMessage(err, "E-Mail konnte nicht gesendet werden."));
+      setError(authErrorMessage(t, err, t("auth.forgot.failed")));
     } finally {
       setSubmitting(false);
     }
@@ -46,18 +46,16 @@ export default function ForgotPasswordPage() {
           <PaperPlaneTilt size={28} weight="fill" aria-hidden="true" />
         </span>
         <h2 className="font-display text-xl font-semibold text-ink">
-          E-Mail unterwegs!
+          {t("auth.forgot.sentHeading")}
         </h2>
         <p className="text-sm leading-6 text-ink-soft">
-          Falls ein Konto für{" "}
-          <span className="font-medium text-ink">{email}</span> existiert,
-          haben wir dir einen Link zum Zurücksetzen deines Passworts geschickt.
+          {t("auth.forgot.sentBody", { email })}
         </p>
         <Link
           href="/login"
           className="mt-2 text-sm font-medium text-accent-strong hover:underline"
         >
-          Zurück zur Anmeldung
+          {t("auth.forgot.backToLogin")}
         </Link>
       </div>
     );
@@ -66,15 +64,15 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <h2 className="mb-2 text-center font-display text-2xl font-semibold tracking-tight text-ink">
-        Passwort vergessen?
+        {t("auth.forgot.heading")}
       </h2>
       <p className="mb-6 text-center text-sm text-ink-soft">
-        Kein Problem! Wir schicken dir einen Link zum Zurücksetzen.
+        {t("auth.forgot.subtitle")}
       </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className="text-sm font-medium text-ink-soft">
-            E-Mail
+            {t("auth.email")}
           </label>
           <input
             id="email"
@@ -83,7 +81,7 @@ export default function ForgotPasswordPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="du@beispiel.de"
+            placeholder={t("auth.emailPlaceholder")}
             className={inputClassName}
           />
         </div>
@@ -102,7 +100,7 @@ export default function ForgotPasswordPage() {
           disabled={submitting}
           className="mt-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Wird gesendet …" : "Link senden"}
+          {submitting ? t("auth.forgot.submitting") : t("auth.forgot.submit")}
         </button>
 
         <p className="text-center text-sm text-ink-soft">
@@ -110,7 +108,7 @@ export default function ForgotPasswordPage() {
             href="/login"
             className="font-medium text-accent-strong hover:underline"
           >
-            Zurück zur Anmeldung
+            {t("auth.forgot.backToLogin")}
           </Link>
         </p>
       </form>

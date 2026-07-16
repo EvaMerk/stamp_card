@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 export function LogoutButton() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
 
   async function handleLogout() {
@@ -27,7 +29,7 @@ export function LogoutButton() {
       disabled={submitting}
       className="rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink-soft shadow-sm transition hover:border-accent/50 hover:text-accent-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {submitting ? "Wird abgemeldet …" : "Abmelden"}
+      {submitting ? t("auth.loggingOut") : t("auth.logout")}
     </button>
   );
 }

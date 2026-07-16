@@ -14,6 +14,8 @@
  */
 
 import type { CSSProperties } from "react";
+import type { TranslateFn } from "@/lib/i18n/LanguageProvider";
+import type { MessageKey } from "@/lib/i18n/messages";
 import {
   Barbell,
   Bicycle,
@@ -66,29 +68,39 @@ export const GOAL_ICONS: Record<string, Icon> = {
 /** Standard-Symbol für neue Ziele bzw. Fallback bei goal.icon = null. */
 export const DEFAULT_GOAL_ICON = "Target";
 
-/** Kuratierte Auswahl fürs GoalForm (Reihenfolge = Anzeige im Grid). */
-export const GOAL_ICON_CHOICES: { name: string; label: string }[] = [
-  { name: "Target", label: "Zielscheibe" },
-  { name: "Barbell", label: "Krafttraining" },
-  { name: "PersonSimpleRun", label: "Laufen" },
-  { name: "Bicycle", label: "Radfahren" },
-  { name: "SwimmingPool", label: "Schwimmen" },
-  { name: "BookOpen", label: "Lesen" },
-  { name: "PencilLine", label: "Schreiben" },
-  { name: "MusicNotes", label: "Musik" },
-  { name: "Palette", label: "Kreativität" },
-  { name: "Plant", label: "Pflanzen" },
-  { name: "Drop", label: "Wasser trinken" },
-  { name: "ForkKnife", label: "Ernährung" },
-  { name: "Moon", label: "Schlaf" },
-  { name: "Broom", label: "Haushalt" },
-  { name: "PiggyBank", label: "Sparen" },
-  { name: "ChatsCircle", label: "Soziales" },
-  { name: "Sun", label: "Draußen sein" },
-  { name: "Prohibit", label: "Verzicht" },
-  { name: "Heart", label: "Selbstfürsorge" },
-  { name: "Sparkle", label: "Besonderes" },
+/**
+ * Kuratierte Auswahl fürs GoalForm (Reihenfolge = Anzeige im Grid). Die
+ * anzeigbaren Labels sind übersetzt: `labelKey` verweist auf den i18n-
+ * Schlüssel (goalIcon.*), aufgelöst über {@link goalIconLabel}.
+ */
+export const GOAL_ICON_CHOICES: { name: string; labelKey: MessageKey }[] = [
+  { name: "Target", labelKey: "goalIcon.Target" },
+  { name: "Barbell", labelKey: "goalIcon.Barbell" },
+  { name: "PersonSimpleRun", labelKey: "goalIcon.PersonSimpleRun" },
+  { name: "Bicycle", labelKey: "goalIcon.Bicycle" },
+  { name: "SwimmingPool", labelKey: "goalIcon.SwimmingPool" },
+  { name: "BookOpen", labelKey: "goalIcon.BookOpen" },
+  { name: "PencilLine", labelKey: "goalIcon.PencilLine" },
+  { name: "MusicNotes", labelKey: "goalIcon.MusicNotes" },
+  { name: "Palette", labelKey: "goalIcon.Palette" },
+  { name: "Plant", labelKey: "goalIcon.Plant" },
+  { name: "Drop", labelKey: "goalIcon.Drop" },
+  { name: "ForkKnife", labelKey: "goalIcon.ForkKnife" },
+  { name: "Moon", labelKey: "goalIcon.Moon" },
+  { name: "Broom", labelKey: "goalIcon.Broom" },
+  { name: "PiggyBank", labelKey: "goalIcon.PiggyBank" },
+  { name: "ChatsCircle", labelKey: "goalIcon.ChatsCircle" },
+  { name: "Sun", labelKey: "goalIcon.Sun" },
+  { name: "Prohibit", labelKey: "goalIcon.Prohibit" },
+  { name: "Heart", labelKey: "goalIcon.Heart" },
+  { name: "Sparkle", labelKey: "goalIcon.Sparkle" },
 ];
+
+/** Übersetztes Label eines Icon-Namens (Fallback: der rohe Name). */
+export function goalIconLabel(t: TranslateFn, name: string): string {
+  const choice = GOAL_ICON_CHOICES.find((c) => c.name === name);
+  return choice ? t(choice.labelKey) : name;
+}
 
 export interface GoalIconProps {
   /** Wert aus goals.icon: Phosphor-Name ODER Emoji (Bestandsdaten). */

@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { Target } from "@phosphor-icons/react";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 /** Freundlicher Leerzustand fürs Dashboard, wenn noch keine Ziele existieren. */
 export function EmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
       <span
@@ -18,17 +20,16 @@ export function EmptyState() {
         <Target size={40} weight="bold" />
       </span>
       <h2 className="relative font-display text-xl font-semibold tracking-tight text-ink">
-        Noch keine Ziele — Zeit für dein erstes!
+        {t("empty.heading")}
       </h2>
       <p className="relative max-w-sm text-sm leading-6 text-ink-soft">
-        Leg ein Ziel an (z.B. 100x Sport in diesem Jahr) und sammle Stempel —
-        Feld für Feld, Karte für Karte, bis zur Belohnung.
+        {t("empty.body")}
       </p>
       <Link
         href="/goals/new"
         className="relative mt-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-contrast shadow-md shadow-accent/25 transition hover:bg-accent-strong active:scale-[0.98]"
       >
-        Erstes Ziel anlegen
+        {t("empty.cta")}
       </Link>
     </div>
   );

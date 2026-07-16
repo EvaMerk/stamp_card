@@ -33,12 +33,8 @@ export interface NewStampInput {
   slotIndex: number;
 }
 
-/** Deutsche Labels für die Zeitraum-Typen (Segmented Control, Anzeige). */
-export const PERIOD_TYPE_LABELS: Record<PeriodType, string> = {
-  year: "Jahr",
-  month: "Monat",
-  week: "Woche",
-  custom: "Eigener Zeitraum",
-};
+// Labels für die Zeitraum-Typen sind jetzt übersetzt: siehe
+// src/lib/goals/period-labels.ts (periodTypeLabel) bzw. die i18n-Schlüssel
+// period.year/month/week/custom.
 
 export const PERIOD_TYPES: PeriodType[] = ["year", "month", "week", "custom"];

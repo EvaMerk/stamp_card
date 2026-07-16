@@ -25,7 +25,9 @@ import {
 } from "@/lib/goals/punchcard-math";
 import { getCardRewards } from "@/lib/goals/queries";
 import type { Goal, GoalCardReward, Stamp } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 import { CardOverviewList } from "./CardOverviewList";
+import { ChartLoading } from "./ChartLoading";
 
 const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 
@@ -33,14 +35,7 @@ const FALLBACK_COLOR = "#e07316"; // --accent (Light)
 // nie im Server-Bundle, nie im initialen Routen-Chunk (Export-kompatibel).
 const StampHistoryChart = dynamic(() => import("./StampHistoryChart"), {
   ssr: false,
-  loading: () => (
-    <div
-      className="flex h-60 items-center justify-center rounded-[20px] bg-sunken text-xs text-ink-faint"
-      aria-hidden="true"
-    >
-      Diagramm wird geladen …
-    </div>
-  ),
+  loading: () => <ChartLoading heightClass="h-60" />,
 });
 
 export interface GoalAnalyticsViewProps {
@@ -60,6 +55,7 @@ export function GoalAnalyticsView({
   rewards,
   chartHeight = 240,
 }: GoalAnalyticsViewProps) {
+  const { t } = useTranslation();
   const color = goal.color ?? FALLBACK_COLOR;
   const stampCount = stamps.length;
   const cards = totalCards(goal.target_count, goal.card_size);
@@ -77,9 +73,10 @@ export function GoalAnalyticsView({
     }
   }
 
+  const { lang } = useTranslation();
   const chartData = useMemo(
-    () => buildStampChartData(goal, stamps),
-    [goal, stamps],
+    () => buildStampChartData(goal, stamps, lang),
+    [goal, stamps, lang],
   );
 
   return (
@@ -88,13 +85,12 @@ export function GoalAnalyticsView({
         <span className="font-display font-bold text-ink">
           {stampCount}/{goal.target_count}
         </span>{" "}
-        gestempelt · {remaining} offen · {fullCards}/{cards} Karten voll
+        {t("analytics.statsSuffix", { remaining, fullCards, cards })}
       </p>
 
       {stampCount === 0 ? (
         <p className="rounded-[20px] border-2 border-dashed border-hairline bg-sunken/60 px-4 py-8 text-center text-sm leading-6 text-ink-soft">
-          Noch keine Stempel — sobald du den ersten setzt, wächst hier deine
-          Verlaufskurve.
+          {t("analytics.empty")}
         </p>
       ) : (
         <StampHistoryChart data={chartData} color={color} height={chartHeight} />
@@ -122,6 +118,7 @@ export function GoalAnalytics({
   active = true,
   chartHeight,
 }: GoalAnalyticsProps) {
+  const { t } = useTranslation();
   const { stamps, loading, error, refetch } = useGoalStamps(goal.id);
   const [rewards, setRewards] = useState<GoalCardReward[]>([]);
   const prevActive = useRef(active);
@@ -148,7 +145,7 @@ export function GoalAnalytics({
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Spinner label="Statistik wird geladen …" />
+        <Spinner label={t("analytics.loading")} />
       </div>
     );
   }

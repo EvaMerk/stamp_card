@@ -1,9 +1,11 @@
 "use client";
 
 import { addDays, addMonths, addYears, format, isValid, parseISO, subDays } from "date-fns";
-import { de } from "date-fns/locale";
 import { Input } from "@/components/ui/Input";
-import { PERIOD_TYPE_LABELS, PERIOD_TYPES, type PeriodType } from "@/lib/goals/types";
+import { PERIOD_TYPES, type PeriodType } from "@/lib/goals/types";
+import { periodTypeLabel } from "@/lib/goals/period-labels";
+import { useI18n } from "@/lib/i18n/LanguageProvider";
+import { dateLocale } from "@/lib/i18n/date-locale";
 import { cn } from "@/lib/utils";
 
 export interface PeriodPickerProps {
@@ -38,9 +40,6 @@ export function derivedEndDate(
   }
 }
 
-function formatDate(date: Date): string {
-  return format(date, "d. MMMM yyyy", { locale: de });
-}
 
 /**
  * Zeitraum-Auswahl: Pillen-Segmented-Control (Jahr/Monat/Woche/Eigener
@@ -57,17 +56,20 @@ export function PeriodPicker({
   startDateError,
   endDateError,
 }: PeriodPickerProps) {
+  const { t, lang } = useI18n();
   const start = parseISO(startDate);
   const derivedEnd = derivedEndDate(periodType, startDate);
+  const formatDate = (date: Date) =>
+    format(date, "d. MMMM yyyy", { locale: dateLocale(lang) });
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm font-medium text-ink-soft">Zeitraum</span>
+      <span className="text-sm font-medium text-ink-soft">{t("period.label")}</span>
 
       <div
         className="grid grid-cols-2 gap-1 rounded-full bg-sunken p-1 max-sm:rounded-[20px] sm:grid-cols-4"
         role="radiogroup"
-        aria-label="Zeitraum-Typ"
+        aria-label={t("period.typeLabel")}
       >
         {PERIOD_TYPES.map((type) => {
           const selected = periodType === type;
@@ -85,7 +87,7 @@ export function PeriodPicker({
                   : "text-ink-soft hover:text-ink",
               )}
             >
-              {PERIOD_TYPE_LABELS[type]}
+              {periodTypeLabel(t, type)}
             </button>
           );
         })}
@@ -94,7 +96,7 @@ export function PeriodPicker({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           type="date"
-          label="Startdatum"
+          label={t("period.startDate")}
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
           error={startDateError}
@@ -102,7 +104,7 @@ export function PeriodPicker({
         {periodType === "custom" && (
           <Input
             type="date"
-            label="Enddatum"
+            label={t("period.endDate")}
             value={endDate}
             min={startDate || undefined}
             onChange={(e) => onEndDateChange(e.target.value)}
@@ -113,8 +115,11 @@ export function PeriodPicker({
 
       {periodType !== "custom" && derivedEnd && isValid(start) && (
         <p className="text-xs text-ink-soft">
-          Zeitraum: {formatDate(start)} – {formatDate(derivedEnd)} (
-          {PERIOD_TYPE_LABELS[periodType]})
+          {t("period.range", {
+            start: formatDate(start),
+            end: formatDate(derivedEnd),
+            type: periodTypeLabel(t, periodType),
+          })}
         </p>
       )}
     </div>

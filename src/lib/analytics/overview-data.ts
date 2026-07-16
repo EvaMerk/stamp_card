@@ -9,9 +9,10 @@
  */
 
 import { format, isToday, isYesterday, parseISO } from "date-fns";
-import { de } from "date-fns/locale";
 import { slotsForCard, totalCards } from "@/lib/goals/punchcard-math";
 import type { Goal, Stamp } from "@/lib/goals/types";
+import type { Lang } from "@/lib/i18n/constants";
+import { dateLocale } from "@/lib/i18n/date-locale";
 
 /** Auf so viele Tage wird der Aktivitäts-Feed maximal begrenzt. */
 export const ACTIVITY_MAX_DAYS = 30;
@@ -61,7 +62,7 @@ export type ActivityEntry =
 export interface DayActivity {
   /** Kalendertag als yyyy-MM-dd (lokale Zeit). */
   dateKey: string;
-  /** "Heute", "Gestern" oder deutsches Datum. */
+  /** "Heute"/"Gestern" bzw. "Today"/"Yesterday" oder lokalisiertes Datum. */
   label: string;
   entries: ActivityEntry[];
 }
@@ -164,11 +165,17 @@ function dayKey(date: Date): string {
   return format(date, "yyyy-MM-dd");
 }
 
-/** "Heute", "Gestern", sonst deutsches Datum ("5. Juli 2026"). */
-function dayLabel(date: Date): string {
-  if (isToday(date)) return "Heute";
-  if (isYesterday(date)) return "Gestern";
-  return format(date, "d. MMMM yyyy", { locale: de });
+/** Lokalisierte Wörter für "Heute"/"Gestern" (aus dem i18n-Dict gereicht). */
+export interface DayLabelStrings {
+  today: string;
+  yesterday: string;
+}
+
+/** "Heute"/"Today", "Gestern"/"Yesterday", sonst lokalisiertes Datum. */
+function dayLabel(date: Date, lang: Lang, labels: DayLabelStrings): string {
+  if (isToday(date)) return labels.today;
+  if (isYesterday(date)) return labels.yesterday;
+  return format(date, "d. MMMM yyyy", { locale: dateLocale(lang) });
 }
 
 /**
@@ -181,6 +188,8 @@ export function buildDayActivity(
   goals: readonly Goal[],
   stampsByGoal: ReadonlyMap<string, Stamp[]>,
   completions: readonly CardCompletion[],
+  lang: Lang,
+  dayLabels: DayLabelStrings,
   maxDays: number = ACTIVITY_MAX_DAYS,
 ): DayActivity[] {
   // Pro Tag: Stempelzahl je Ziel + Karten-Abschlüsse.
@@ -216,7 +225,7 @@ export function buildDayActivity(
     .slice(0, maxDays)
     .map(([key, entry]) => ({
       dateKey: key,
-      label: dayLabel(entry.date),
+      label: dayLabel(entry.date, lang, dayLabels),
       entries: [
         ...entry.completed.map<ActivityEntry>((c) => ({
           type: "cardCompleted",
@@ -238,6 +247,8 @@ export function buildDayActivity(
 export function buildOverviewData(
   goals: readonly Goal[],
   stamps: readonly Stamp[],
+  lang: Lang,
+  dayLabels: DayLabelStrings,
 ): OverviewData {
   const stampsByGoal = groupStampsByGoal(stamps);
   const empty: Stamp[] = [];
@@ -261,6 +272,12 @@ export function buildOverviewData(
       totalCompletedCards: completions.length,
       goalCount: goals.length,
     },
-    activity: buildDayActivity(goals, stampsByGoal, completions),
+    activity: buildDayActivity(
+      goals,
+      stampsByGoal,
+      completions,
+      lang,
+      dayLabels,
+    ),
   };
 }

@@ -24,8 +24,15 @@ Setup, Test-Konto, Roadmap mit Einzelschritten. Hier nur die harten Regeln:
    `target_count`/`card_size`/Stempelzahl **berechnet**
    (`src/lib/goals/punchcard-math.ts`, muss synchron zur SQL-View
    `goal_progress` bleiben) — nie als eigene Entität speichern.
-6. **UI auf Deutsch**, Amber/Creme-Design; Auth-Fehler über
-   `src/lib/supabase/auth-errors.ts` übersetzen.
+6. **UI ist zweisprachig (de/en)**, Amber/Creme-Design. Standard = Geräte-
+   sprache (`navigator.language` „de*" → Deutsch, sonst Englisch), pro Gerät in
+   `localStorage` (`stempelkarte-lang`) — kein DB-/Supabase-Zustand, funktioniert
+   vor dem Login. **Alle sichtbaren Strings über `t()`** aus
+   `src/lib/i18n/LanguageProvider` — NEUE Texte immer in BEIDE Wörterbücher
+   (`src/lib/i18n/messages.ts`, `de` + `en`) eintragen, nie hartkodieren.
+   Auth-Fehler über `src/lib/supabase/auth-errors.ts` (gibt i18n-Schlüssel
+   zurück, `t` reingeben). Marke „Stempelkarte" bleibt in beiden Sprachen. Nur
+   App-Chrome übersetzen — Nutzerinhalte (Ziel-Titel, Belohnungstexte) NICHT.
 7. **Definition of Done**: `npx tsc --noEmit`, `npm run build` **und**
    `NEXT_OUTPUT_MODE=export npm run build` sauber + Browser-Test mit dem
    Test-Konto (siehe `docs/PROJEKT.md` §6). Temporäre `dev-*`-Testseiten vor

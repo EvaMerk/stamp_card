@@ -30,6 +30,8 @@ import type {
   GoalPercentSeries,
 } from "@/lib/analytics/overview-data";
 import type { Goal } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
+import { dateLocale } from "@/lib/i18n/date-locale";
 
 const Plot = createPlotlyComponent(Plotly);
 
@@ -52,6 +54,7 @@ export default function OverviewChart({
   completions,
   height = 300,
 }: OverviewChartProps) {
+  const { t, lang } = useTranslation();
   const theme = chartTheme(usePrefersDark());
   const seriesByGoal = new Map(series.map((s) => [s.goalId, s]));
 
@@ -95,12 +98,13 @@ export default function OverviewChart({
           color,
           line: { color: theme.markerLine, width: 1 },
         },
-        hovertext: goalCompletions.map(
-          (c) =>
-            `Karte ${c.cardNumber} voll · ${format(
-              parseISO(c.completedAt),
-              "dd.MM.yyyy",
-            )}`,
+        hovertext: goalCompletions.map((c) =>
+          t("chart.cardFull", {
+            n: c.cardNumber,
+            date: format(parseISO(c.completedAt), "dd.MM.yyyy", {
+              locale: dateLocale(lang),
+            }),
+          }),
         ),
         hovertemplate: "%{hovertext}<extra>%{fullData.name}</extra>",
       } satisfies Data,
@@ -160,7 +164,7 @@ export default function OverviewChart({
         yref: "y",
         y: 100,
         yanchor: "bottom",
-        text: "Ziel",
+        text: t("chart.target"),
         showarrow: false,
         font: { size: 10, color: theme.target },
       },

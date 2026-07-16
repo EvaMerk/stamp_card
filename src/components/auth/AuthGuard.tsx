@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/Spinner";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 
 /**
  * Client-seitiger Schutz für eingeloggte Bereiche: leitet nicht angemeldete
@@ -13,6 +14,7 @@ import { Spinner } from "@/components/ui/Spinner";
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,7 +25,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   if (loading || !user) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <Spinner label="Anmeldung wird geprüft …" />
+        <Spinner label={t("auth.guard.checking")} />
       </div>
     );
   }

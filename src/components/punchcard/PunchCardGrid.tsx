@@ -8,6 +8,7 @@ import {
   totalCards,
 } from "@/lib/goals/punchcard-math";
 import type { Goal, Stamp } from "@/lib/goals/types";
+import { useTranslation } from "@/lib/i18n/LanguageProvider";
 import { PunchSlot, type PunchSlotState } from "./PunchSlot";
 import { RewardBadge } from "./RewardBadge";
 
@@ -47,6 +48,7 @@ export function PunchCardGrid({
   rewardText,
   onStamp,
 }: PunchCardGridProps) {
+  const { t } = useTranslation();
   const [stamping, setStamping] = useState(false);
   // Glückwunsch-Notiz, wenn die letzte Stempelung eine Karte vollendet hat.
   const [completedNote, setCompletedNote] = useState<{
@@ -95,11 +97,11 @@ export function PunchCardGrid({
         <div className="relative px-4 pb-4 pt-3.5">
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
-              Mitgliedskarte · No. {cardIndex + 1}
+              {t("card.membership", { n: cardIndex + 1 })}
             </span>
             {cards > 1 && (
               <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.18em] text-ink-faint">
-                von {cards}
+                {t("card.of", { total: cards })}
               </span>
             )}
           </div>

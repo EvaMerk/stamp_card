@@ -6,16 +6,36 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { ACCENTS } from "@/lib/theme/accents";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import type { ThemeMode } from "@/lib/theme/constants";
+import { LANGS, type Lang } from "@/lib/i18n/constants";
+import { useI18n } from "@/lib/i18n/LanguageProvider";
+import type { MessageKey } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 
-const MODES: { key: ThemeMode; label: string }[] = [
-  { key: "system", label: "System" },
-  { key: "light", label: "Hell" },
-  { key: "dark", label: "Dunkel" },
+const MODES: { key: ThemeMode; labelKey: MessageKey }[] = [
+  { key: "system", labelKey: "settings.mode.system" },
+  { key: "light", labelKey: "settings.mode.light" },
+  { key: "dark", labelKey: "settings.mode.dark" },
 ];
+
+/** Akzent-Schlüssel → i18n-Label (übersetzte Farbnamen). */
+const ACCENT_LABEL_KEYS: Record<string, MessageKey> = {
+  amber: "accent.amber",
+  coral: "accent.coral",
+  pink: "accent.pink",
+  violet: "accent.violet",
+  blau: "accent.blau",
+  tuerkis: "accent.tuerkis",
+  gruen: "accent.gruen",
+};
+
+const LANG_LABEL_KEYS: Record<Lang, MessageKey> = {
+  de: "settings.lang.de",
+  en: "settings.lang.en",
+};
 
 function SettingsContent() {
   const { mode, setMode, accent, setAccent } = useTheme();
+  const { t, lang, setLang } = useI18n();
 
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 py-8">
@@ -31,28 +51,67 @@ function SettingsContent() {
           className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition hover:text-accent-strong"
         >
           <ArrowLeft size={16} weight="bold" />
-          Zurück zum Dashboard
+          {t("settings.backToDashboard")}
         </Link>
         <h1 className="mt-4 font-display text-2xl font-bold tracking-tight text-ink">
-          Einstellungen
+          {t("settings.title")}
         </h1>
-        <p className="mt-1 text-sm text-ink-faint">Gilt für dieses Gerät.</p>
+        <p className="mt-1 text-sm text-ink-faint">{t("settings.deviceHint")}</p>
       </header>
 
       <main className="relative flex flex-col gap-8">
+        {/* ── Sprache / Language ─────────────────────────────────────────── */}
+        <section className="rounded-3xl border border-hairline bg-surface p-5 shadow-card">
+          <h2 className="font-display text-lg font-semibold text-ink">
+            {t("settings.language")}
+          </h2>
+          <p className="mt-1 mb-4 text-sm text-ink-soft">
+            {t("settings.languageHint")}
+          </p>
+
+          <div
+            className="grid grid-cols-2 gap-1 rounded-full bg-sunken p-1"
+            role="radiogroup"
+            aria-label={t("settings.language")}
+          >
+            {LANGS.map((key) => {
+              const selected = lang === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setLang(key)}
+                  className={cn(
+                    "rounded-full px-3 py-2 text-sm font-medium transition",
+                    selected
+                      ? "bg-surface text-accent-strong shadow-sm"
+                      : "text-ink-soft hover:text-ink",
+                  )}
+                >
+                  {t(LANG_LABEL_KEYS[key])}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
         {/* ── Design / Theme-Modus ──────────────────────────────────────── */}
         <section className="rounded-3xl border border-hairline bg-surface p-5 shadow-card">
-          <h2 className="font-display text-lg font-semibold text-ink">Design</h2>
+          <h2 className="font-display text-lg font-semibold text-ink">
+            {t("settings.design")}
+          </h2>
           <p className="mt-1 mb-4 text-sm text-ink-soft">
-            Hell, dunkel oder automatisch nach Systemeinstellung.
+            {t("settings.designHint")}
           </p>
 
           <div
             className="grid grid-cols-3 gap-1 rounded-full bg-sunken p-1"
             role="radiogroup"
-            aria-label="Theme-Modus"
+            aria-label={t("settings.themeMode")}
           >
-            {MODES.map(({ key, label }) => {
+            {MODES.map(({ key, labelKey }) => {
               const selected = mode === key;
               return (
                 <button
@@ -68,7 +127,7 @@ function SettingsContent() {
                       : "text-ink-soft hover:text-ink",
                   )}
                 >
-                  {label}
+                  {t(labelKey)}
                 </button>
               );
             })}
@@ -78,19 +137,20 @@ function SettingsContent() {
         {/* ── Akzentfarbe ───────────────────────────────────────────────── */}
         <section className="rounded-3xl border border-hairline bg-surface p-5 shadow-card">
           <h2 className="font-display text-lg font-semibold text-ink">
-            Akzentfarbe
+            {t("settings.accent")}
           </h2>
           <p className="mt-1 mb-4 text-sm text-ink-soft">
-            Färbt Knöpfe, aktive Zustände und Glanzlichter der App.
+            {t("settings.accentHint")}
           </p>
 
           <div
             className="grid grid-cols-4 gap-3 sm:grid-cols-7"
             role="radiogroup"
-            aria-label="Akzentfarbe"
+            aria-label={t("settings.accent")}
           >
-            {ACCENTS.map(({ key, label, swatch }) => {
+            {ACCENTS.map(({ key, swatch }) => {
               const selected = accent === key;
+              const label = t(ACCENT_LABEL_KEYS[key]);
               return (
                 <button
                   key={key}
